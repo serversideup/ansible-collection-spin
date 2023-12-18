@@ -12,7 +12,7 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-  - Jay Rogers (https://github.com/jaydrogers)
+  - Jay Rogers (https://x.com/jaydrogers)
 ### OPTIONAL but strongly recommended
 # A short summary description of the collection
 description: The Spin Collection is a collection of Ansible roles that can be used to spin up a Linux server with Docker Swarm.
@@ -28,8 +28,8 @@ tags: ['serversideup', 'spin', 'linux', 'docker', 'swarm', 'ansible']
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
 dependencies:
-  serversideup.linux_common: '>=0.1.0'
-  serversideup.docker_swarm: '>=0.0.1'
+  serversideup.linux_common: '*'
+  serversideup.docker_swarm: '*'
 # The URL of the originating SCM repository
 repository: https://github.com/serversideup/ansible-collection-spin
 # The URL to any online docs
