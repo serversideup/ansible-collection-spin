@@ -8,6 +8,18 @@ check_pending_changes() {
     fi
 }
 
+confirm() {
+    read -r -p "${1:-Are you sure? [y/N]} " response
+    case "$response" in
+        [yY][eE][sS]|[yY]) 
+            true
+            ;;
+        *)
+            false
+            ;;
+    esac
+}
+
 show_help() {
     echo "Version Bumper Script"
     echo "Usage: $0 <command>"
@@ -109,14 +121,21 @@ current_version=$(yq e '.version' galaxy.yml)
 # Bump the version
 new_version=$(bump_version $current_version $1)
 
-# Update galaxy.yml with the new version
-yq e ".version = \"$new_version\"" -i galaxy.yml
+if confirm "You are about to change the version to $new_version. Do you want to continue? [y/N]"; then
+    # Update galaxy.yml with the new version
+    yq e ".version = \"$new_version\"" -i galaxy.yml
 
-# # Commit and tag
-# git add galaxy.yml
-# git commit -m "Bump version to $new_version"
-# git tag $new_version
+    Commit and tag
+    git add galaxy.yml
+    git commit -m "Bump version to $new_version"
+    git tag $new_version
 
-# # Push changes
-# git push origin main
-# git push origin --tags
+    Push changes
+    git push origin main
+    git push origin --tags
+
+    echo "🚀 Shipped version $new_version!"
+else
+    echo "🛑 Version update aborted."
+    exit 1
+fi
