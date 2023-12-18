@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 check_pending_changes() {
     if ! git diff-index --quiet HEAD --; then
         echo "❌ There are uncommitted changes in the repository."
