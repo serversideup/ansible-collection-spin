@@ -32,4 +32,4 @@ jobs:
         run: ansible-galaxy collection build
   
       - name: Publish Collection to Ansible Galaxy
-        run: ansible-galaxy collection publish ./namespace-collection_name-*.tar.gz --api-key ${{ secrets.GALAXY_API_KEY }}
+        run: ansible-galaxy collection publish ./serversideup-spin-*.tar.gz --api-key ${{ secrets.GALAXY_API_KEY }}
