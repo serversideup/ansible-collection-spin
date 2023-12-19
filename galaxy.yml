@@ -1,7 +1,7 @@
 ---
 namespace: serversideup
 name: spin
-version: 0.0.1-6
+version: 0.0.1-5
 readme: README.md
 authors:
   - Jay Rogers (https://x.com/jaydrogers)
@@ -13,9 +13,6 @@ tags:
   - linux
   - docker
   - swarm
-dependencies:
-  serversideup.linux_common: '*'
-  serversideup.docker_swarm: '*'
 repository: https://github.com/serversideup/ansible-collection-spin
 documentation: https://release-2-0.ssu-spin.pages.dev/docs
 homepage: https://release-2-0.ssu-spin.pages.dev/
