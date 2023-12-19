@@ -1,4 +1,8 @@
 ---
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
 - name: Restart docker
   ansible.builtin.service:
     name: docker

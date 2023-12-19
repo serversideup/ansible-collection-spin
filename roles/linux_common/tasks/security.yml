@@ -25,7 +25,7 @@
 - name: Open the firewall port for SSH.
   community.general.ufw:
     rule: allow
-    port: "{{ server_ssh_port }}/tcp"
+    port: "{{ server_ssh_port }}"
+    proto: "tcp"
     comment: "Allow SSH connections."
-    state: present
   notify: Enable ufw
