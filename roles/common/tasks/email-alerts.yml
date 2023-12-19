@@ -1,0 +1,54 @@
+---
+- name: Disable Postfix port listening.
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: ^inet_interfaces
+    line: "inet_interfaces = loopback-only"
+    state: present
+    backrefs: yes
+  notify: Restart postfix
+
+- name: Configure Postfix hostname.
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: ^myhostname
+    line: "myhostname = {{ postfix_hostname }}"
+    state: present
+    backrefs: yes
+  notify: Restart postfix
+
+- name: Prevent Postfix from listening on ports.
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/master.cf
+    regexp: ^smtp      inet
+    line: "#smtp      inet"
+    state: present
+    backrefs: yes
+  notify: Restart postfix
+
+- name: Configure Postfix relayhost (if set).
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/main.cf
+    regexp: ^relayhost
+    line: "relayhost = [{{ postfix_relayhost }}]:{{ postfix_relayhost_port }}"
+    state: present
+    backrefs: yes
+  notify: Restart postfix
+  when: postfix_relayhost is defined
+
+- name: Set Postfix Sasl password (if set).
+  ansible.builtin.lineinfile:
+    dest: /etc/postfix/sasl_passwd
+    regexp: ^\[{{ postfix_relayhost }}\]:{{ postfix_relayhost_port }}
+    line: "[{{ postfix_relayhost }}]:{{ postfix_relayhost_port }} {{ postfix_relayhost_username }}:{{ postfix_relayhost_password }}"
+    state: present
+    backrefs: yes
+  notify: Create postmap hash
+  when: postfix_relayhost is defined
+
+- name: Set Postfix aliases for root user email notifications.
+  ansible.builtin.lineinfile:
+    dest: /etc/aliases
+    regexp: "^root:"
+    line: "root: {{ server_contact }}"
+  notify: Run newaliases

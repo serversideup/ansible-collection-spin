@@ -1,0 +1,4 @@
+- name: Initialize Docker Swarm.
+  community.docker.docker_swarm:
+    state: present
+  when: "'service_docker_swarm_all_managers' is in group_names"

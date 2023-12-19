@@ -1,0 +1,60 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  tasks:   
+    - name: Check current timezone
+      command: timedatectl show --property=Timezone --value
+      register: current_timezone
+      changed_when: false
+
+    - name: Assert timezone is correct
+      assert:
+        that:
+          - current_timezone.stdout == server_timezone
+        fail_msg: "Timezone is not set correctly"
+      
+    - name: Get Charlie user info.
+      ansible.builtin.user:
+        name: charlie
+      register: charlie_user_test
+
+    - name: Assert charlie user exists.
+      assert:
+        that:
+          - charlie_user_test.name == 'charlie'
+          - charlie_user_test.changed == false
+        fail_msg: "Failed to assert the user 'charlie' exists."
+
+    - name: Check to see if the user "deploy" exists.
+      command: whoami
+      become_user: deploy
+      register: deploy_whoami
+      changed_when: false
+
+    - name: Get Docker user info.
+      ansible.builtin.user:
+        name: "{{ docker_user.username }}"
+      register: docker_user_test
+
+    - name: Assert docker user exists.
+      assert:
+        that:
+          - docker_user_test.name == "{{ docker_user.username }}"
+          - docker_user_test.changed == false
+          - docker_user_test.uid == {{ docker_user.uid }}
+        fail_msg: "Failed to assert the Docker user exists."
+    
+    - name: Get Docker & Docker Swarm info.
+      community.docker.docker_swarm_info:
+      ignore_errors: true
+      register: docker_info
+    
+    - name: Assert Docker is installed and it's a swarm manager.
+      assert:
+        that:
+          - docker_info.docker_swarm_active == true
+          - docker_info.docker_swarm_manager == true
+        fail_msg: "Failed to assert Docker Swarm was initialized."

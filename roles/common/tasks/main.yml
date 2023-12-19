@@ -1,0 +1,16 @@
+---
+- name: Set up Debian (when OS is Debian based)
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Configure email alerts.
+  ansible.builtin.include_tasks: email-alerts.yml
+
+- name: Setup MOTD.
+  ansible.builtin.include_tasks: motd.yml
+
+- name: Configure server users.
+  ansible.builtin.include_tasks: users.yml
+
+- name: Apply security policies to the server.
+  ansible.builtin.include_tasks: security.yml

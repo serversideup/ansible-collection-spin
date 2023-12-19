@@ -1,0 +1,24 @@
+- name: Ensure the Docker user's group exists with the correct GID.
+  ansible.builtin.group:
+    name: "{{ docker_user.group }}"
+    gid: "{{ docker_user.gid }}"
+    state: present
+
+- name: Ensure the Docker user is created.
+  ansible.builtin.user:
+    name: "{{ docker_user.username }}"
+    uid: "{{ docker_user.uid }}"
+    group: "{{ docker_user.group }}"
+    groups: "{{ docker_user.secondary_groups }}"
+    shell: /bin/bash
+    create_home: yes
+    state: present
+    system: no
+
+- name: Set the authorized SSH keys for the Docker user.
+  ansible.posix.authorized_key:
+    user: "{{ docker_user.username }}"
+    state: present
+    key: "{{ item }}"
+  with_items: "{{ docker_user.authorized_ssh_keys }}"
+  when: docker_user.authorized_ssh_keys is defined

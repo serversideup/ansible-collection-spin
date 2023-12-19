@@ -1,0 +1,46 @@
+server_timezone: "America/Chicago"
+
+users:
+  - username: alice
+    name: Alice Smith
+    state: present
+    groups: ['adm', 'sudo']
+    password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+    shell: "/bin/bash"
+    authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
+
+  - username: bob
+    name: Bob Smith
+    state: present
+    password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+    groups: ['adm', 'sudo']
+    shell: "/bin/bash"
+    authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
+
+additional_users:
+  - username: charlie
+    name: Charlie Smith
+    state: present
+    groups: ['adm', 'sudo']
+    password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+    shell: "/bin/bash"
+    authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu charlie"
+
+  - username: dana
+    name: Dana Smith
+    state: present
+    password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+    groups: ['adm', 'sudo']
+    shell: "/bin/bash"
+    authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dana"
+
+docker_user:
+  username: dockeruser
+  uid: 8888
+  group: dockergroup
+  secondary_groups: "docker"
+  gid: 8888

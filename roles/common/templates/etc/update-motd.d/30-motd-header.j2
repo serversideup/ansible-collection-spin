@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Set colors
+HEADER_TEXT_COLOR="{{ motd_header_text_color }}"
+HEADER_BACKGROUND_COLOR="{{ motd_header_background_color }}"
+HOSTNAME_TEXT_COLOR=" {{ motd_hostname_text_color }}"
+
+STOP="\e[0m"
+
+# Configure header colors
+printf "${HEADER_BACKGROUND_COLOR}"
+printf "${HEADER_TEXT_COLOR}"
+printf "\n"
+
+# Print header text
+/usr/bin/env figlet "{{ motd_header_text }}"
+printf "Brought to you by serversideup.net"
+
+#Reset Terminal color
+printf "${STOP}"
+printf "\n"
+
+#Start showing the host name
+printf "You are connected to: "
+
+# Set color to organge & print hostname
+printf "${HOSTNAME_TEXT_COLOR}"
+printf "$(hostname)"
+
+#Reset Terminal color
+printf "${STOP}"
+printf "\n"

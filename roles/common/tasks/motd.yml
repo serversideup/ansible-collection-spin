@@ -1,0 +1,21 @@
+---
+- name: Remove any unnecessary MOTD files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/etc/motd"
+    - "/etc/update-motd.d/10-help-text"
+    - "/etc/update-motd.d/50-motd-news"
+    - "/etc/update-motd.d/51-cloudguest"
+    - "/etc/update-motd.d/80-livepatch"
+
+- name: Apply custom MOTD messages
+  ansible.builtin.template:
+    src: "etc/update-motd.d/{{ item }}.j2"
+    dest: "/etc/update-motd.d/{{ item }}"
+    mode: 0755
+  with_items:
+    - 30-motd-header
+    - 35-sysinfo
+    - 40-services

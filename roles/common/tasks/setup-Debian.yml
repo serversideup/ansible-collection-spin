@@ -1,0 +1,35 @@
+---
+- name: Disable USERGROUPS_ENABLE for Umask 022.
+  ansible.builtin.lineinfile:
+    dest: /etc/login.defs
+    regexp: ^USERGROUPS_ENAB
+    line: "#USERGROUPS_ENAB yes"
+    state: present
+    backrefs: yes
+
+- name: Update the apt cache.
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_expiration }}"
+
+- name: Install latest versions of common packages.
+  ansible.builtin.apt:
+    name: "{{ common_installed_packages }}"
+    state: latest
+    cache_valid_time: "{{ apt_cache_expiration }}"
+
+- name: Configure server to automatically install security updates.
+  ansible.builtin.template:
+    src: "etc/apt/apt.conf.d/{{ item }}.j2"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items: 
+    - 20auto-upgrades
+    - 50unattended-upgrades
+
+- name: "Set timezone to {{ server_timezone }}."
+  community.general.timezone:
+    name: "{{ server_timezone }}"
+  notify: Restart cron

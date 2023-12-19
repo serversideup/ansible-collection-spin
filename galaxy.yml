@@ -14,8 +14,9 @@ tags:
   - docker
   - swarm
 dependencies:
-  serversideup.linux_common: '*'
-  serversideup.docker_swarm: '*'
+  ansible.posix: '*'
+  community.general: '*'
+  community.docker: '*'
 repository: https://github.com/serversideup/ansible-collection-spin
 documentation: https://release-2-0.ssu-spin.pages.dev/docs
 homepage: https://release-2-0.ssu-spin.pages.dev/
