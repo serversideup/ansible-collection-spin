@@ -1,7 +1,7 @@
 ---
 namespace: serversideup
 name: spin
-version: 0.5.3
+version: 0.5.4
 readme: README.md
 authors:
   - Jay Rogers (https://x.com/jaydrogers)
