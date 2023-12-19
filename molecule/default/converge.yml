@@ -28,5 +28,5 @@
       failed_when: systemctl_status.rc > 1
  
   roles:
-  - role: serversideup.spin.linux-common
+  - role: serversideup.spin.linux_common
   - role: serversideup.spin.swarm

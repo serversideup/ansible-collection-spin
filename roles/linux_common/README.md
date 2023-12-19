@@ -147,4 +147,4 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: serversideup.spin.linux-common, server_timezone: 'America/Chicago' }
+         - { role: serversideup.spin.linux_common, server_timezone: 'America/Chicago' }
