@@ -61,21 +61,5 @@ jobs:
     release:
       if: ${{ github.ref_type == 'tag' }}
       needs: [lint, molecule]
-      runs-on: ubuntu-latest
-      steps:
-        - name: Check out the codebase.
-          uses: actions/checkout@v3
-  
-        - name: Set up Python 3.
-          uses: actions/setup-python@v4
-          with:
-              python-version: '3.x'
-  
-        - name: Install Ansible.
-          run: pip3 install ansible-core
-  
-        - name: Build Collection
-          run: ansible-galaxy collection build
-    
-        - name: Publish Collection to Ansible Galaxy
-          run: ansible-galaxy collection publish ./serversideup-spin-*.tar.gz --api-key ${{ secrets.GALAXY_API_KEY }}
+      uses: ./.github/workflows/release.yml
+      secrets: inherit
