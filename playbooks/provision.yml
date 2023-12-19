@@ -8,16 +8,6 @@
     - name: Set ansible_ssh_port
       set_fact:
         ansible_ssh_port: "{{ server_ssh_port }}"
-
-    - name: Update apt cache.
-      apt: update_cache=yes cache_valid_time=600
-      when: ansible_os_family == 'Debian'
-
-    - name: Install PIP dependencies.
-      pip:
-        name: docker
-        state: present
-
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm

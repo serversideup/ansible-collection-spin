@@ -6,6 +6,11 @@
       - docker-engine
     state: absent
 
+- name: Ensure 'docker' python package is installed.
+  ansible.builtin.pip:
+    name: docker
+    state: latest
+
 - name: Ensure dependencies are installed.
   ansible.builtin.apt:
     name:
