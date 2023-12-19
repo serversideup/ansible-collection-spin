@@ -1,4 +1,0 @@
----
-roles:
-  - name: serversideup.linux_common
-  - name: serversideup.docker_swarm
