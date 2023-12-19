@@ -23,18 +23,9 @@
   notify: Restart ssh
 
 - name: Open the firewall port for SSH.
-  ansible.builtin.command: "ufw allow {{ server_ssh_port }}/tcp"
-  become: true
-  register: ufw_allow_ssh_output
-  changed_when: ufw_allow_ssh_output.stdout is search('Rules updated')
-    
-- name: Get the UFW status.
-  ansible.builtin.command: "ufw status"
-  become: true
-  register: ufw_status_output
-  changed_when: false
-
-- name: Ensure UFW is enabled.
-  ansible.builtin.command: "ufw enable"
-  become: true
-  when: '"Status: active" not in ufw_status_output.stdout'
+  community.general.ufw:
+    rule: allow
+    port: "{{ server_ssh_port }}/tcp"
+    comment: "Allow SSH connections."
+    state: present
+  notify: Enable ufw

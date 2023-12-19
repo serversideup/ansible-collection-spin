@@ -1,4 +1,13 @@
 ---
+- name: Create postmap hash
+  ansible.builtin.command: postmap /etc/postfix/sasl_passwd
+  when: postfix_relayhost is defined
+  notify: Restart postfix
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
 - name: Restart cron
   ansible.builtin.service:
     name: cron
@@ -9,15 +18,10 @@
     name: postfix
     state: restarted
 
-- name: Create postmap hash
-  ansible.builtin.command: postmap /etc/postfix/sasl_passwd
-  when: postfix_relayhost is defined
-  notify: Restart postfix
-
-- name: Run newaliases
-  ansible.builtin.command: newaliases
-
 - name: Restart ssh
   ansible.builtin.service:
     name: ssh
     state: restarted
+
+- name: Run newaliases
+  ansible.builtin.command: newaliases
