@@ -127,14 +127,14 @@ if confirm "You are about to change the version to $new_version. Do you want to 
     # Update galaxy.yml with the new version
     yq e ".version = \"$new_version\"" -i galaxy.yml
 
-    # Commit and tag
-    git add galaxy.yml
-    git commit -m "Bump version to $new_version"
-    git tag $new_version
+    # # Commit and tag
+    # git add galaxy.yml
+    # git commit -m "Bump version to $new_version"
+    # git tag $new_version
 
-    # Push changes
-    git push origin main
-    git push origin --tags
+    # # Push changes
+    # git push origin main
+    # git push origin --tags
 
     echo "🚀 Shipped version $new_version!"
 else
