@@ -1,13 +1,13 @@
 ---
 namespace: serversideup
 name: spin
-version: 0.0.1-4
+version: 0.0.1-5
 readme: README.md
 authors:
   - Jay Rogers (https://x.com/jaydrogers)
 description: The Spin Collection is a collection of Ansible roles that can be used to spin up a Linux server with Docker Swarm.
 license_file: LICENSE
-tags: 
+tags:
   - serversideup
   - spin
   - linux
