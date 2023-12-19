@@ -16,6 +16,7 @@
     state: present
     backrefs: yes
   notify: Restart postfix
+  when: not postfix_hostname is match("^\d{1,3}(\.\d{1,3}){3}$") # If not an IP address.
 
 - name: Prevent Postfix from listening on ports.
   ansible.builtin.lineinfile:
