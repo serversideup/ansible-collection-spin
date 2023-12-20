@@ -1,6 +1,7 @@
 - name: Initialize Docker Swarm.
   community.docker.docker_swarm:
     state: present
+    advertise_addr: "{{ docker_swarm.advertise_addr }}"
   when: "'swarm_managers' is in group_names"
 
 - name: Open HTTP and HTTP ports (if enabled)
