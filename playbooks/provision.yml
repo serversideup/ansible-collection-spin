@@ -2,6 +2,7 @@
 - name: Deploy and maintain Docker Swarm servers with Spin.
   hosts: '{{ target | default("all") }}'
   remote_user: '{{ remote_user | default("root") }}'
+  become: true
   vars:
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
   pre_tasks:
