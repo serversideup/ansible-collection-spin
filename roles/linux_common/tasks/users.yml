@@ -24,7 +24,7 @@
   register: created_users
 
 - name: Force password change on next login.
-  ansible.builtin.shell: chage -d 0 {{ item.username }}
+  ansible.builtin.shell: chage -d 0 {{ item.item.username }}
   with_items: "{{ created_users.results }}"
   when: item.changed
 
