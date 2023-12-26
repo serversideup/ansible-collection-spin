@@ -17,13 +17,16 @@
     password: '{{ item.password | default(omit) }}'
     comment: '{{ item.name | default(omit) }}'
     uid: '{{ item.uid | default(omit) }}'
-    password_expire_min: '{{ item.password_expire_min | default(0) }}' # Default password to be changed on next login
-    password_expire_max: '{{ item.password_expire_max | default(0) }}' # Default password to be changed on next login
     home: '{{ item.homedir | default(omit) }}'
     state: '{{ item.state | default("present") }}'
     update_password: '{{ item.update_password | default("on_create") }}'
   with_items: "{{ flattend_users }}"
   register: created_users
+
+- name: Force password change on next login.
+  ansible.builtin.shell: chage -d 0 {{ item.username }}
+  with_items: "{{ created_users.results }}"
+  when: item.changed
 
 - name: Configure authorized keys.
   ansible.posix.authorized_key:
