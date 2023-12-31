@@ -1,31 +1,16 @@
-- name: Disallow root SSH access.
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^PermitRootLogin"
-    line: "PermitRootLogin no"
-    state: present
-  notify: Restart ssh
-
-- name: Set SSH port.
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^Port"
-    line: "Port {{ server_ssh_port }}"
-    state: present
-  notify: Restart ssh
-
-- name: Disallow password authentication over SSH.
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^PasswordAuthentication"
-    line: "PasswordAuthentication no"
-    state: present
+- name: Ensure secure SSH config is up to date.
+  ansible.builtin.template:
+    src: "etc/ssh/sshd_config.d/spin-secure-ssh.conf.j2"
+    dest: "etc/ssh/sshd_config.d/spin-secure-ssh.conf"
+    owner: root
+    group: root
+    mode: 0644
   notify: Restart ssh
 
 - name: Open the firewall port for SSH.
   community.general.ufw:
     rule: allow
-    port: "{{ server_ssh_port }}"
+    port: "{{ ssh_port }}"
     proto: "tcp"
     comment: "Allow SSH connections."
   notify: Enable ufw

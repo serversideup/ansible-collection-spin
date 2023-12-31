@@ -6,7 +6,7 @@ server_timezone: "Etc/UTC"
 server_contact: changeme@example.com
 
 # SSH
-server_ssh_port: "22"
+ssh_port: "22"
 
 ## Email Notifications
 postfix_hostname: "{{ inventory_hostname }}"
