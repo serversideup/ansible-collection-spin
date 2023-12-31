@@ -1,7 +1,7 @@
 - name: Ensure secure SSH config is up to date.
   ansible.builtin.template:
     src: "etc/ssh/sshd_config.d/spin-secure-ssh.conf.j2"
-    dest: "etc/ssh/sshd_config.d/spin-secure-ssh.conf"
+    dest: "/etc/ssh/sshd_config.d/spin-secure-ssh.conf"
     owner: root
     group: root
     mode: 0644
