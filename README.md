@@ -26,7 +26,7 @@ Here's a demo showing a process of creating a new Laravel project and deploying 
 - **[Website](https://serversideup.net/open-source/spin/)** overview of the product.
 - **[Docs](https://serversideup.net/open-source/spin/docs)** for a deep-dive on how to use the product.
 - **[Discord](https://serversideup.net/discord)** for friendly support from the community and the team.
-- **[GitHub](https://github.com/serversideup/spin)** for source code, bug reports, and project management.
+- **[GitHub](https://github.com/serversideup/ansible-collection-spin)** for source code, bug reports, and project management.
 - **[Get Professional Help](https://serversideup.net/professional-support)** - Get video + screen-sharing help directly from the core contributors.
 
 ## Contributing
