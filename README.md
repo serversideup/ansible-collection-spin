@@ -32,7 +32,7 @@ Here's a demo showing a process of creating a new Laravel project and deploying 
 ## Contributing
 As an open-source project, we strive for transparency and collaboration in our development process. We greatly appreciate any contributions members of our community can provide. Whether you're fixing bugs, proposing features, improving documentation, or spreading awareness - your involvement strengthens the project. Please review our [contribution guidelines](https://serversideup.net/open-source/spin/docs/community/contributing) and [code of conduct](./.github/code_of_conduct.md) to understand how we work together respectfully.
 
-- **Bug Report**: If you're experiencing an issue while using these images, please [create an issue](https://github.com/serversideup/spin/issues/new/choose).
+- **Bug Report**: If you're experiencing an issue while using these images, please [create an issue](https://github.com/serversideup/ansible-collection-spin/issues/new/choose).
 - **Feature Request**: Make this project better by [submitting a feature request](https://github.com/serversideup/spin/discussions/9).
 - **Documentation**: Improve our documentation by [submitting a documentation change](./docs/README.md).
 - **Community Support**: Help others on [GitHub Discussions](https://github.com/serversideup/spin/discussions) or [Discord](https://serversideup.net/discord).
