@@ -1,5 +1,5 @@
 ---
-- name: Deploy and maintain Docker Swarm servers with Spin.
+- name: Setup and provision Docker Swarm servers with Spin.
   hosts: '{{ target | default("all") }}'
   remote_user: '{{ remote_user | default("root") }}'
   become: true
