@@ -1,0 +1,5 @@
+{
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json": "file:///Volumes/Development/github-projects/ansible-collection-spin/playbooks/deploy.yml"
+  }
+}
