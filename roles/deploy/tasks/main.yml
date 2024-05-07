@@ -1,3 +1,3 @@
 ---
 - debug:
-    msg: "Hello world!"
+    msg: "Docker Compose files to be used: {{ docker_compose_files }}"
