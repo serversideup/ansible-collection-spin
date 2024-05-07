@@ -5,7 +5,9 @@
 server_timezone: "Etc/UTC"
 server_contact: changeme@example.com
 
-# SSH
+# If you the SSH port below, you may need to run `spin provision -p <your-default-ssh-port>`
+# to get a connection on your first provision. Otherwise, SSH will try connecting 
+# to your new port before the SSH server configuration is updated.
 ssh_port: "22"
 
 ## Email Notifications
