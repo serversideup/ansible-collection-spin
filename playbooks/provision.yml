@@ -4,7 +4,7 @@
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
-    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o Port={{ ssh_port | default(22) }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain}}"
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm

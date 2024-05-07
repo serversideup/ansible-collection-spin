@@ -4,7 +4,7 @@
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
-    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o Port={{ ssh_port | default(22) }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
     compose_files: "{{ compose_files | default(['docker-compose.yml', 'docker-compose.prod.yml']) }}"
   roles:
     - serversideup.spin.deploy
