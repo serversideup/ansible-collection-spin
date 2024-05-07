@@ -10,9 +10,4 @@
       set_fact:
         ansible_ssh_port: "{{ ssh_port }}"
   roles:
-    # - serversideup.spin.deploy
-
-    - name: deploy
-      src: https://github.com/serversideup/ansible-collection-spin
-      scm: git
-      version: add-deploy-feature
+    - serversideup.spin.deploy
