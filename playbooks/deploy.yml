@@ -1,0 +1,18 @@
+---
+- name: Deploy your application with Docker over SSH (no Docker registry required).
+  hosts: '{{ target }}'
+  remote_user: "{{ lookup('env', 'USER') }}"
+  become: true
+  vars:
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
+  pre_tasks:
+    - name: Set ansible_ssh_port
+      set_fact:
+        ansible_ssh_port: "{{ ssh_port }}"
+  roles:
+    # - serversideup.spin.deploy
+
+    - name: deploy
+      src: https://github.com/serversideup/ansible-collection-spin
+      scm: git
+      version: add-deploy-feature
