@@ -1,7 +1,7 @@
 ---
 - name: Deploy your application with Docker over SSH (no Docker registry required).
   hosts: '{{ target }}'
-  remote_user: "{{ lookup('env', 'USER') }}"
+  remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o Port={{ ssh_port | default(22) }}"
