@@ -73,3 +73,4 @@ build_platform: "linux/amd64"
 # Default to the current timestamp.
 build_tag: "{{ lookup('pipe', 'date +%s') }}"
 build_prefix: "local.docker"
+project_name: "myproject"

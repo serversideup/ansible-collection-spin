@@ -4,11 +4,12 @@
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
+    ansible_port: "{{ ssh_port }}"
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
     compose_files: "{{ compose_files | default(['docker-compose.yml', 'docker-compose.prod.yml']) }}"
-    ansible_port: "{{ ssh_port }}"
     build_tag: "{{ build_tag | default(lookup('pipe', 'date +%s'))}}"
     build_platform: "{{ build_platform | default('linux/amd64') }}"
     build_prefix: "{{ build_prefix | default('serversideup') }}"
+    project_name: "{{ project_name | default('myproject') }}"
   roles:
     - serversideup.spin.deploy

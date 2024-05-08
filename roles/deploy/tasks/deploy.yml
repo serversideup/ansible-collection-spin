@@ -1,6 +1,7 @@
 ---
-- name: Deploy Docker stack on remote hosts
-  shell: >
-    docker --log-level debug -H "ssh://{{ ansible_user }}@{{ inventory_hostname }}"
-    stack deploy --with-registry-auth -c {{ compose_files | join(' -c ') }} {{ target_environment }} --prune
-  delegate_to: localhost
+- name: Deploy stack from a compose file
+  community.docker.docker_stack:
+    state: present
+    name: mystack
+    compose:
+      - /opt/docker-compose.yml
