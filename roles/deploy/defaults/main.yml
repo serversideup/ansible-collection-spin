@@ -6,3 +6,4 @@
     build_platform: "linux/amd64"
     build_prefix: "docker.local"
     project_name: "myproject"
+    project_path: "/ansible"

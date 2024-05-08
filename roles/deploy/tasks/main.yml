@@ -1,14 +1,15 @@
 ---
-- name: Find Dockerfiles
+- name: Find all Dockerfiles
   find:
-    paths: "{{ ansible_env.PWD }}"
-    patterns: 'Dockerfile*'
+    paths: "{{ project_path}}"
+    patterns: "Dockerfile*"
   register: dockerfiles
+  delegate_to: localhost
 
-- debug:
-    var: dockerfiles
-
-- name: Fail if no Dockerfiles are found
-  fail:
-    msg: "❌ No Dockerfiles found in this directory. Be sure to run 'spin deploy' in your project root."
-  when: dockerfiles.matched == 0
+- name: Build Docker images
+  community.docker.docker_image:
+    path: "{{ item.path }}"
+    name: "{{ item.path | regex_replace('^.*/Dockerfile\\.?(.*)$', '\\1') | default('image', true) }}"
+    source: build
+  loop: "{{ dockerfiles.files }}"
+  delegate_to: localhost
