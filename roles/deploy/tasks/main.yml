@@ -1,3 +1,4 @@
 ---
-- debug:
-    msg: "Docker Compose files to be used: {{ docker_compose_files }}"
+- import_tasks: build.yml
+- import_tasks: transfer.yml
+- import_tasks: deploy.yml

@@ -1,0 +1,22 @@
+---
+- name: Prepare commands for remote Docker ID checks
+  set_fact:
+    check_commands: "{{ docker_images | map('first') | map('regex_replace', '^(.*)$', 'docker inspect --format=\\\"{{ .Id }}\\\" \\1 2>/dev/null || echo \\\"\\\"') | list | join('; ') }}"
+
+- name: Check remote Docker IDs
+  shell: "{{ check_commands }}"
+  register: remote_docker_ids
+  delegate_to: "{{ inventory_hostname }}"
+  changed_when: false
+
+- name: Determine images needing update and transfer
+  shell: >
+    local_ids=({{ docker_images | map('last') | join(' ') }});
+    remote_ids=({{ remote_docker_ids.stdout_lines }});
+    for idx in "${!local_ids[@]}"; do
+      if [ "${local_ids[idx]}" != "${remote_ids[idx]}" ]; then
+        docker save "{{ docker_images[idx].0 }}" | gzip | ssh -p "{{ ansible_port }}" "{{ ansible_user }}@{{ inventory_hostname }}" 'gzip -d | docker load';
+      fi
+    done
+  delegate_to: localhost
+  when: remote_docker_ids.stdout_lines | length > 0

@@ -62,14 +62,14 @@ docker_user:
 #     authorized_keys:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
 
-####################################################
+###########################################
 # Build Settings (only if you use "spin deploy")
-####################################################
+###########################################
 
 # Have this match your server's architecture
 # https://docs.docker.com/build/building/multi-platform/
 build_platform: "linux/amd64"
 
 # Default to the current timestamp.
-image_tag: "{{ lookup('pipe', 'date +%s') }}"
-image_prefix: "local.docker"
+build_tag: "{{ lookup('pipe', 'date +%s') }}"
+build_prefix: "local.docker"
