@@ -1,25 +1,18 @@
 ---
 - name: Find Dockerfiles
   find:
-    paths: "{{ role_path }}/files"
+    paths: "{{ ansible_env.PWD }}"
     patterns: "Dockerfile*"
   register: dockerfiles
 
 - name: Build Docker images locally
   command: >
-    docker buildx build --platform {{ build_platform }} -f {{ item.path }} -t "{{ build_prefix }}/{{ item.path | regex_replace('^.*Dockerfile\\.?', '') }}:{{ build_tag }}" --load
+    docker buildx build --platform {{ build_platform }} -f {{ item.path }} -t "{{ build_prefix }}/{{ item.path | regex_replace('^.*Dockerfile\\.', '') }}:{{ build_tag }}" --load
   loop: "{{ dockerfiles.files }}"
   register: build_result
   failed_when: build_result.rc != 0
   changed_when: "'Successfully built' in build_result.stdout"
-  notify: log_build
-
-- name: Log build results
-  debug:
-    msg: "{{ build_result.results }}"
-  listen: log_build
-
 
 - name: Set fact for Docker images and IDs
   set_fact:
-    docker_images: "{{ docker_build_results.results | map(attribute='stdout_lines') | list }}"
+    docker_images: "{{ build_result.results | map(attribute='stdout_lines') | list }}"
