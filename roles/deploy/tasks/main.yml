@@ -1,4 +1,5 @@
 ---
-- import_tasks: build.yml
-- import_tasks: transfer.yml
-- import_tasks: deploy.yml
+- name: Fail if no Dockerfiles are found
+  fail:
+    msg: "❌ No Dockerfiles found in this directory. Be sure to run 'spin deploy' in your project root."
+  when: dockerfiles.matched == 0
