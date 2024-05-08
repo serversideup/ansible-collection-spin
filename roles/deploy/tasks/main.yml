@@ -5,6 +5,9 @@
     patterns: 'Dockerfile*'
   register: dockerfiles
 
+- debug:
+  var: dockerfiles
+
 - name: Fail if no Dockerfiles are found
   fail:
     msg: "❌ No Dockerfiles found in this directory. Be sure to run 'spin deploy' in your project root."
