@@ -6,7 +6,7 @@
   register: dockerfiles
 
 - debug:
-  var: dockerfiles
+    var: dockerfiles
 
 - name: Fail if no Dockerfiles are found
   fail:
