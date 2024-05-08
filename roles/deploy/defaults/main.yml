@@ -1,9 +1,0 @@
-    compose_files:
-      - docker-compose.yml
-      - docker-compose.prod.yml
-      
-    build_tag: "{{ lookup('pipe', 'date +%s'))"
-    build_platform: "linux/amd64"
-    build_prefix: "docker.local"
-    project_name: "myproject"
-    project_path: "/ansible"
