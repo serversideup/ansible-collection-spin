@@ -5,6 +5,7 @@
   become: true
   vars:
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
+    ansible_port: "{{ ssh_port }}"
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm

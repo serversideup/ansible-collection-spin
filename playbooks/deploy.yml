@@ -6,5 +6,6 @@
   vars:
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
     compose_files: "{{ compose_files | default(['docker-compose.yml', 'docker-compose.prod.yml']) }}"
+    ansible_port: "{{ ssh_port }}"
   roles:
     - serversideup.spin.deploy
