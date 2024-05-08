@@ -1,6 +1,6 @@
 ---
 - name: Setup and provision Docker Swarm servers with Spin.
-  hosts: "{{ target | default('none') }}"
+  hosts: "{{ target | default('all') }}"
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
