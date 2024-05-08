@@ -22,3 +22,11 @@
     key: "{{ item }}"
   with_items: "{{ docker_user.authorized_ssh_keys }}"
   when: docker_user.authorized_ssh_keys is defined
+
+- name: Add public keys of admin or sudo users to Docker user
+  ansible.posix.authorized_key:
+    user: "{{ docker_user.username }}"
+    state: present
+    key: "{{ item.authorized_keys.0.public_key }}"
+  loop: "{{ users }}"
+  when: "'adm' in item.groups or 'sudo' in item.groups"
