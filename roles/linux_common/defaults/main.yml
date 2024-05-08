@@ -9,6 +9,8 @@ server_contact: changeme@example.com
 ssh_port: "22"
 ssh_permit_root_login: "no"
 ssh_password_authentication: "no" 
+ssh_allow_tcp_forwarding: "yes"
+ssh_gateway_ports: "yes"
 
 
 ## Email Notifications
