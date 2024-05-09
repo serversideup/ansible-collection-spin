@@ -136,7 +136,7 @@ if confirm "You are about to change the version to $new_version. Do you want to 
     # git push origin main
     # git push origin --tags
 
-    echo "🚀 Shipped version $new_version!"
+    echo "🚀 Updated galaxy.yml to $new_version!"
 else
     echo "🛑 Version update aborted."
     exit 1
