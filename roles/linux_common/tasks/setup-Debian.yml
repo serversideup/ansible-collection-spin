@@ -18,6 +18,12 @@
     state: latest
     cache_valid_time: "{{ apt_cache_expiration }}"
 
+# Related GitHub issue: https://github.com/geerlingguy/docker-ubuntu2404-ansible/issues/2
+- name: Ensure Python system warning is removed.
+  ansible.builtin.file:
+    path: /usr/lib/python3.12/EXTERNALLY-MANAGED
+    state: absent
+
 - name: Configure server to automatically install security updates.
   ansible.builtin.template:
     src: "etc/apt/apt.conf.d/{{ item }}.j2"
