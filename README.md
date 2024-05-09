@@ -15,7 +15,7 @@ The Spin Ansible Collection is the secret magic that powers the [`spin provision
 To use this collection, it is recommended to install `spin` via the [official installation instructions](https://serversideup.net/open-source/spin/docs/). Once installed, you can use the `spin provision` command to provision your servers. This command will automatically install the collection for you.
 
 ## Requirements
-In the early phases of this project, we will be supporting **Ubuntu 22.04** only. We do intend to support other operating systems as we continue to develop this project.
+In the early phases of this project, we will be supporting **Ubuntu 22.04** and **Ubuntu 24.04** only. We do intend to support other operating systems as we continue to develop this project.
 
 ## Demo
 Here's a demo showing a process of creating a new Laravel project and deploying it to production:
