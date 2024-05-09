@@ -1,11 +1,14 @@
-- name: Ensure secure SSH config is up to date.
+- name: Ensure SSH configurations are up to date.
   ansible.builtin.template:
-    src: "etc/ssh/sshd_config.d/spin-secure-ssh.conf.j2"
-    dest: "/etc/ssh/sshd_config.d/spin-secure-ssh.conf"
+    src: "etc/ssh/sshd_config.d/{{ item }}.j2"
+    dest: "/etc/ssh/sshd_config.d/{{ item }}"
     owner: root
     group: root
     mode: 0644
   notify: Restart ssh
+  with_items: 
+    - spin-secure-ssh.conf
+    - spin-ssh-tunnels.conf
 
 - name: Open the firewall port for SSH.
   community.general.ufw:
