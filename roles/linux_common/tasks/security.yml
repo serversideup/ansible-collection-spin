@@ -10,6 +10,14 @@
     - spin-secure-ssh.conf
     - spin-ssh-tunnels.conf
 
+- name: Configure sudo access for sudo group
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    state: "{{ 'present' if use_passwordless_sudo | default(false) else 'absent' }}"
+    regexp: '^%sudo\s+ALL=\(ALL\)\s+NOPASSWD:\s+ALL'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+
 - name: Open the firewall port for SSH.
   community.general.ufw:
     rule: allow

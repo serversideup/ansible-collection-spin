@@ -19,6 +19,9 @@ postfix_hostname: "{{ inventory_hostname }}"
 # postfix_relayhost_username: "myusername"
 # postfix_relayhost_password: "mysupersecretpassword"
 
+## Configure passwordless sudo for the sudo group (it's disabled by default)
+# use_passwordless_sudo: true
+
 ##############################################################
 # Deploy User
 ##############################################################
@@ -39,9 +42,10 @@ docker_user:
 ##############################################################
 
 ### Use the template below to set users and their authorized keys
-## Passwords must be set with an encrypted hash. To do this, see the Ansible FAQ.
-## Your best bet is probably using the `mkpasswd` on a Linux machine.
-## https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+## Passwords are optional if you use passwordless sudo. If you do
+## use passwords, you must be set with an encrypted hash. You can 
+## generate an encrypted hash with `spin mkpasswd`. Learn more:
+## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
 
 # users:
 #   - username: alice
