@@ -26,7 +26,10 @@
 - name: Force password change on next login.
   ansible.builtin.command: chage -d 0 {{ item.item.username }}
   with_items: "{{ created_users.results }}"
-  when: item.changed
+  when: 
+    - item.changed
+    - item.item.password is defined
+    - item.item.password | length > 0
 
 - name: Configure authorized keys.
   ansible.posix.authorized_key:

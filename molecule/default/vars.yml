@@ -38,6 +38,14 @@ additional_users:
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dana"
 
+  - username: nopassword
+    name: No Password Test
+    state: present
+    groups: ['adm', 'sudo']
+    shell: "/bin/bash"
+    authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu nopassword"
+
 docker_user:
   username: dockeruser
   uid: 8888
