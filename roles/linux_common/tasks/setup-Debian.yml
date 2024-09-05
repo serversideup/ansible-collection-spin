@@ -1,12 +1,4 @@
 ---
-- name: Disable USERGROUPS_ENABLE for Umask 022.
-  ansible.builtin.lineinfile:
-    dest: /etc/login.defs
-    regexp: ^USERGROUPS_ENAB
-    line: "#USERGROUPS_ENAB yes"
-    state: present
-    backrefs: yes
-
 - name: Update the apt cache.
   ansible.builtin.apt:
     update_cache: yes

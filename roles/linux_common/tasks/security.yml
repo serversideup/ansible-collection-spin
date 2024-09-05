@@ -25,3 +25,23 @@
     proto: "tcp"
     comment: "Allow SSH connections."
   notify: Enable ufw
+
+- name: Ensure umask is set in /etc/login.defs
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: '^UMASK'
+    line: 'UMASK 022'
+    state: present
+
+- name: Disable USERGROUPS_ENAB in /etc/login.defs
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: '^USERGROUPS_ENAB'
+    line: 'USERGROUPS_ENAB no'
+    state: present
+
+- name: Set umask in /etc/profile
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    line: 'umask 022'
+    state: present

@@ -9,8 +9,8 @@
 - name: Setup MOTD.
   ansible.builtin.include_tasks: motd.yml
 
-- name: Configure server users.
-  ansible.builtin.include_tasks: users.yml
-
 - name: Apply security policies to the server.
   ansible.builtin.include_tasks: security.yml
+
+- name: Configure server users.
+  ansible.builtin.include_tasks: users.yml
