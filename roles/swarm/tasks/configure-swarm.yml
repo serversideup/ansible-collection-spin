@@ -2,7 +2,7 @@
   community.docker.docker_swarm:
     state: present
     advertise_addr: "{{ docker_swarm.advertise_addr }}"
-  when: "'swarm_managers' is in group_names"
+  when: "'swarm_managers' in group_names or initialize_docker_swarm | default(false) | bool"
 
 - name: Open HTTP and HTTP ports (if enabled)
   community.general.ufw:
