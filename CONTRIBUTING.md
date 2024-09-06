@@ -11,19 +11,19 @@ pipx install virtualenv
 Create a virtual environment in your home directory:
 
 ```bash
-virtualenv ~/.python-venv
+virtualenv ~/.py
 ```
 
 Activate the virtual environment:
 
 ```bash
-source ~/.python-venv/bin/activate
+source ~/.py/bin/activate
 ```
 
 If you want to make the virtual environment available to all users, you can activate it in your `.bashrc` or `.zshrc` file.
 
 ```bash
-source ~/.python-venv/bin/activate
+source ~/.py/bin/activate
 ```
 
 Use the `pip3` command to install Ansible and Molecule:
