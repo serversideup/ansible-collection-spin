@@ -12,13 +12,13 @@
 - name: Configure users.
   ansible.builtin.user:
     name: '{{ item.username }}'
-    groups: '{{ item.groups | join(",") | default(omit) }}'
-    shell: '{{ item.shell | default(omit) }}'
-    password: '{{ item.password | default(omit) }}'
     comment: '{{ item.name | default(omit) }}'
-    uid: '{{ item.uid | default(omit) }}'
+    groups: '{{ item.groups | join(",") | default(omit) }}'
     home: '{{ item.homedir | default(omit) }}'
+    password: '{{ item.password | default(omit) }}'
+    shell: '{{ item.shell | default(omit) }}'
     state: '{{ item.state | default("present") }}'
+    uid: '{{ item.uid | default(omit) }}'
     update_password: '{{ item.update_password | default("on_create") }}'
   with_items: "{{ flattend_users }}"
   register: created_users

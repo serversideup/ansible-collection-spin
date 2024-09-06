@@ -28,10 +28,11 @@ postfix_hostname: "{{ inventory_hostname }}"
 # Docker user configuration.
 docker_user:
   username: deploy
-  uid: 9999
-  group: deploy
-  secondary_groups: "docker"
   gid: 9999
+  group: deploy
+  home: "/home/deploy"
+  secondary_groups: "docker"
+  uid: 9999
   ## Uncomment to set authorized SSH keys for the docker user.
   # authorized_ssh_keys: 
   #   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKNJGtd7a4DBHsQi7HGrC5xz0eAEFHZ3Ogh3FEFI2345 fake@key"
