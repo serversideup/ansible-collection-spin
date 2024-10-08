@@ -53,6 +53,9 @@ server_contact: changeme@example.com
 # to your new port before the SSH server configuration is updated.
 ssh_port: "22"
 
+## You can set this to false to require a password for sudo.
+use_passwordless_sudo: true
+
 ## Email Notifications
 postfix_hostname: "{{ inventory_hostname }}"
 
@@ -61,6 +64,3 @@ postfix_hostname: "{{ inventory_hostname }}"
 # postfix_relayhost_port: "587"
 # postfix_relayhost_username: "myusername"
 # postfix_relayhost_password: "mysupersecretpassword"
-
-## You can set this to false to require a password for sudo.
-use_passwordless_sudo: true
