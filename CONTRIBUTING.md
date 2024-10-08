@@ -29,7 +29,7 @@ source ~/.py/bin/activate
 Use the `pip3` command to install Ansible and Molecule:
 
 ```bash
-pip3 install ansible molecule 'molecule-plugins[docker]' docker
+pip3 install requirements.txt
 ```
 
 ## Running tests
