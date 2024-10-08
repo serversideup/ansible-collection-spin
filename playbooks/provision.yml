@@ -6,6 +6,7 @@
   vars:
     ansible_port: "{{ ssh_port }}"
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain"
+    ansible_python_interpreter: auto_silent
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm
