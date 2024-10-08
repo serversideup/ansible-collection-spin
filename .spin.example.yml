@@ -45,7 +45,7 @@ server_contact: changeme@example.com
 #     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
 
 ###########################################
-# Advanced Server Configuration
+# 🤓 Advanced Server Configuration
 ###########################################
 
 # If you the SSH port below, you may need to run `spin provision -p <your-default-ssh-port>`
