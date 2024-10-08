@@ -16,7 +16,7 @@
     groups: '{{ item.groups | join(",") | default(omit) }}'
     home: '{{ item.homedir | default(omit) }}'
     password: '{{ item.password | default(omit) }}'
-    shell: '{{ item.shell | default(omit) }}'
+    shell: '{{ item.shell | default("/bin/bash") }}'
     state: '{{ item.state | default("present") }}'
     uid: '{{ item.uid | default(omit) }}'
     update_password: '{{ item.update_password | default("on_create") }}'

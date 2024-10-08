@@ -38,3 +38,32 @@ docker_user:
 docker_swarm:
   # Use "default_ipv4.address" and fail to first available IP if not set.
   advertise_addr: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }}"
+
+##############################################################
+# Users
+##############################################################
+
+### Use the template below to set users and their authorized keys
+## Passwords are optional if you use passwordless sudo. If you do
+## use passwords, you must be set with an encrypted hash. You can 
+## generate an encrypted hash with `spin mkpasswd`. Learn more:
+## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
+
+# users:
+#   - username: alice
+#     name: Alice Smith
+#     state: present
+#     groups: ['adm','sudo']
+#     password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+#     shell: "/bin/bash"
+#     authorized_keys:
+#       - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
+
+#   - username: bob
+#     name: Bob Smith
+#     state: present
+#     password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+#     groups: ['adm','sudo']
+#     shell: "/bin/bash"
+#     authorized_keys:
+#       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
