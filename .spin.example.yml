@@ -9,16 +9,10 @@ server_contact: changeme@example.com
 # 👇 Users - You must set at least one user
 ##############################################################
 
-### Use the template below to set users and their authorized keys
-## Passwords are optional if you use passwordless sudo. If you do
-## use passwords, you must be set with an encrypted hash. You can 
-## generate an encrypted hash with `spin mkpasswd`. Learn more:
-## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
-
 # users:
 #   - username: alice
 #     name: Alice Smith
-#     groups: ['adm','sudo']
+#     groups: ['sudo']
 #     authorized_keys:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
 
@@ -26,7 +20,7 @@ server_contact: changeme@example.com
 #     name: Bob Smith
 #     state: present
 #     password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
-#     groups: ['adm','sudo']
+#     groups: ['sudo']
 #     shell: "/bin/bash"
 #     authorized_keys:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
@@ -54,6 +48,9 @@ server_contact: changeme@example.com
 ssh_port: "22"
 
 ## You can set this to false to require a password for sudo.
+## If you disable passwordless sudo, you must set a password for all sudo users.
+## generate an encrypted hash with `spin mkpasswd`. Learn more:
+## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
 use_passwordless_sudo: true
 
 ## Email Notifications
