@@ -31,4 +31,11 @@
       - server_contact != 'changeme@example.com'
     fail_msg: "⚠️ WARNING: The server_contact is set to the default value. Please update it with a valid contact email."
     success_msg: "✅ Server notifications will be sent to {{ server_contact }}"
-  ignore_errors: yes
+  register: server_contact_check
+  failed_when: false
+  changed_when: server_contact_check is failed
+
+- name: Display warning if server_contact is not changed
+  ansible.builtin.debug:
+    msg: "{{ server_contact_check.fail_msg }}"
+  when: server_contact_check is failed
