@@ -1,14 +1,9 @@
 ---
-- name: Update the apt cache.
-  ansible.builtin.apt:
-    update_cache: yes
-    cache_valid_time: "{{ apt_cache_expiration }}"
-
 - name: Install latest versions of common packages.
   ansible.builtin.apt:
     name: "{{ common_installed_packages }}"
     state: latest
-    cache_valid_time: "{{ apt_cache_expiration }}"
+    update_cache: yes
 
 # Related GitHub issue: https://github.com/geerlingguy/docker-ubuntu2404-ansible/issues/2
 - name: Ensure Python system warning is removed.

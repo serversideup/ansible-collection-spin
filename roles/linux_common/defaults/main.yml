@@ -26,9 +26,6 @@ postfix_hostname: "{{ inventory_hostname }}"
 # APT Configuration
 ###########################################
 
-# Time is in seconds (default: 24 hours)
-apt_cache_expiration: 86400
-
 # Common packages to install
 common_installed_packages:
   - cron
