@@ -1,0 +1,34 @@
+---
+
+- name: Validate at least one user is set
+  ansible.builtin.fail:
+    msg: "No users are set. You must set at least one user under 'users' or 'additional_users' in '.spin.yml'."
+  when: >
+    ((users | default([])) + (additional_users | default([]))) | length == 0
+
+- name: Validate user passwords when passwordless sudo is disabled
+  ansible.builtin.fail:
+    msg: "User '{{ item.username }}' is missing a password. Passwords are required for sudo users when passwordless sudo is disabled."
+  when:
+    - not use_passwordless_sudo | default(true)
+    - "'sudo' in (item.groups | default([]))"
+    - item.password is not defined or item.password | length == 0
+  loop: "{{ users + additional_users | default([]) }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Validate at least one user belongs to the sudo group
+  ansible.builtin.fail:
+    msg: "No users are assigned to the sudo group. At least one user must belong to the sudo group."
+  when: >
+    ((users | default([])) + (additional_users | default([]))) | selectattr('groups', 'defined') | 
+    selectattr('groups', 'contains', 'sudo') | list | length == 0
+
+- name: Check if server_contact is changed
+  ansible.builtin.assert:
+    that:
+      - server_contact is defined
+      - server_contact != 'changeme@example.com'
+    fail_msg: "⚠️ WARNING: The server_contact is set to the default value. Please update it with a valid contact email."
+    success_msg: "✅ Server notifications will be sent to {{ server_contact }}"
+  ignore_errors: yes

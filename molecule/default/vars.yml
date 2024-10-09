@@ -1,12 +1,12 @@
 server_timezone: "America/Chicago"
-
-use_passwordless_sudo: true
+server_contact: "otheremail@example.com"
+use_passwordless_sudo: false
 
 users:
   - username: alice
     name: Alice Smith
     state: present
-    groups: ['adm', 'sudo']
+    groups: ['sudo']
     password: "$6$IXlCqhTY2T$nDnDJRcvk59V2yb3O4Z9n0zO70z/xVCllphjrJ.L618OvHfSs1hciwtxUS/UxR7tF5xWcwzRr3eHboiSHFG7I1"
     shell: "/bin/bash"
     authorized_keys:
@@ -16,14 +16,15 @@ users:
     name: Bob Smith
     state: present
     password: "$6$IXlCqhTY2T$nDnDJRcvk59V2yb3O4Z9n0zO70z/xVCllphjrJ.L618OvHfSs1hciwtxUS/UxR7tF5xWcwzRr3eHboiSHFG7I1"
-    groups: ['adm', 'sudo']
+    groups: ['sudo']
     shell: "/bin/bash"
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
 
 additional_users:
   - username: charlie
-    groups: ['adm', 'sudo']
+    groups: ['sudo']
+    password: "$6$IXlCqhTY2T$nDnDJRcvk59V2yb3O4Z9n0zO70z/xVCllphjrJ.L618OvHfSs1hciwtxUS/UxR7tF5xWcwzRr3eHboiSHFG7I1"
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu charlie"
 
@@ -31,7 +32,7 @@ additional_users:
     name: Dana Smith
     state: present
     password: "$6$IXlCqhTY2T$nDnDJRcvk59V2yb3O4Z9n0zO70z/xVCllphjrJ.L618OvHfSs1hciwtxUS/UxR7tF5xWcwzRr3eHboiSHFG7I1"
-    groups: ['adm', 'sudo']
+    groups: ['sudo']
     shell: "/bin/bash"
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dana"
@@ -39,7 +40,7 @@ additional_users:
   - username: nopassword
     name: No Password Test
     state: present
-    groups: ['adm', 'sudo']
+    groups: ['users']
     shell: "/bin/bash"
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu nopassword"

@@ -1,4 +1,7 @@
 ---
+- name: Validate inputs.
+  ansible.builtin.include_tasks: validate-inputs.yml
+
 - name: Set up Debian (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
