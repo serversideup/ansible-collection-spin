@@ -44,7 +44,6 @@
         that:
           - docker_user_test.name == docker_user.username
           - docker_user_test.changed == false
-          - docker_user_test.uid == docker_user.uid
         fail_msg: "Failed to assert the Docker user exists."
     
     - name: Get Docker & Docker Swarm info.

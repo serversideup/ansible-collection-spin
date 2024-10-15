@@ -47,8 +47,5 @@ additional_users:
 
 docker_user:
   username: dockeruser
-  uid: 8888
-  group: dockergroup
-  secondary_groups: "docker"
-  gid: 8888
-  home: "/opt/docker"
+  authorized_keys:
+      - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dockeruser"
