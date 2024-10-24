@@ -1,8 +1,7 @@
 ---
 - name: Create servers with the VPS provider of your choice.
   hosts: localhost
-  remote_user: "{{ ansible_user | default('root') }}"
-  become: true
+  gather_facts: false
   vars:
     ansible_port: "{{ ssh_port }}"
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
