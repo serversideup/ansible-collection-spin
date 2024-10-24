@@ -1,0 +1,15 @@
+---
+- name: Validate Hetzner token is set.
+  fail:
+    msg: "Hetzner token is not set. Please set hcloud_token variable or HCLOUD_TOKEN environment variable."
+  when: hcloud_token is undefined and lookup('env', 'HCLOUD_TOKEN') | default('', true) | trim == ''
+
+- name: Ensure Hetzner server is created.
+  hetzner.hcloud.server:
+    name: "{{ server_name }}"
+    hcloud_token: "{{ hcloud_token | default(lookup('env', 'HCLOUD_TOKEN')) }}"
+    server_type: "{{ server_type }}"
+    image: "{{ image }}"
+    location: "{{ location }}"
+    backups: "{{ backups }}"
+    ssh_keys: "{{ sudo_user_ssh_keys }}"

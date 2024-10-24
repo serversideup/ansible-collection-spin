@@ -1,0 +1,8 @@
+---
+- name: Gather SSH keys for sudo users
+  set_fact:
+    sudo_user_ssh_keys: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | list }}"
+    
+- name: Provision Hetzner servers
+  ansible.builtin.include_tasks: setup-Hetzner.yml
+  when: "'provider_hetzner' in group_names"
