@@ -36,7 +36,7 @@ servers:
 # 👇 Providers - You must set at least one provider
 ##############################################################
 
-# providers:
+providers:
 #   - name: digitalocean
 #     do_api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
 
