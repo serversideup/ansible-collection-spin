@@ -9,7 +9,7 @@
   tasks:
     - name: Check if providers and servers are defined
       ansible.builtin.fail:
-        msg: "Providers and servers must be defined in the variables file."
+        msg: "Providers and servers must be defined in the variables file (usually '.spin.yml')."
       when: >
         providers is not defined or
         providers is none or
