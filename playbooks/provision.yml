@@ -8,9 +8,15 @@
     ansible_python_interpreter: auto_silent
   tasks:
     - name: Check if providers and servers are defined
-      fail:
+      ansible.builtin.fail:
         msg: "Providers and servers must be defined in the variables file."
-      when: providers is not defined or providers|length == 0 or servers is not defined or servers|length == 0
+      when: >
+        providers is not defined or
+        providers is none or
+        (providers | default([]) | length == 0) or
+        servers is not defined or
+        servers is none or
+        (servers | default([]) | length == 0)
 
     - name: Create servers
       include_role:

@@ -1,6 +1,6 @@
 ---
 - name: Validate Hetzner token is set.
-  fail:
+  ansible.builtin.fail:
     msg: "Hetzner token is not set. Please set hcloud_token variable or HCLOUD_TOKEN environment variable."
   when: hcloud_token is undefined and lookup('env', 'HCLOUD_TOKEN') | default('', true) | trim == ''
 
