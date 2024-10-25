@@ -120,7 +120,7 @@ case "$1" in
             echo "Usage: $0 --host <hostname>" >&2
             exit 1
         fi
-        generate_inventory | jq --arg hostname "$2" '.(_meta.hostvars[$hostname] // {})'
+        generate_inventory | jq --arg hostname "$2" '._meta.hostvars[$hostname] // {}'
         ;;
     *)
         echo "Usage: $0 [--list|--host <hostname>]" >&2
