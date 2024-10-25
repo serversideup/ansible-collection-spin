@@ -46,7 +46,7 @@ def merge_vars($server):
 # Process providers
 ((.providers // []) | reduce .[] as $provider (
     {};
-    . * {("provider_" + $provider.name): {vars: $provider}}
+    . * {("provider_" + $provider.name): {vars: ($provider | del(.name))}}
 )) as $provider_result |
 
 # Process hardware profiles
@@ -55,8 +55,7 @@ def merge_vars($server):
     . * {
         ("hardware_profile_" + $profile.name): {
             hosts: [],
-            vars: $profile.provider_config,
-            children: ["provider_" + $profile.provider]
+            vars: $profile.provider_config
         },
         ("provider_" + $profile.provider): {
             children: [("hardware_profile_" + $profile.name)]
@@ -67,7 +66,7 @@ def merge_vars($server):
 # Process environments
 ((.environments // []) | reduce .[] as $env (
     {};
-    . * {("environment_" + $env.name): {hosts: [], vars: $env}}
+    . * {("environment_" + $env.name): {hosts: [], vars: ($env | del(.name))}}
 )) as $environment_result |
 
 # Process servers
