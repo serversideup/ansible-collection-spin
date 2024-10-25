@@ -50,12 +50,8 @@ molecule destroy # Destroys the container
 ```
 
 ## Testing the collection
-Instead of committing to a brach and testing on another machine, it might be easier to just build the collection and install it locally.
+Instead of committing to a brach and testing on another machine, it might be easier to just build the collection and install it locally. This will build and install the collection locally on your machine. Look at the file `dev.sh` to see how this is done.
 
 ```bash
-ansible-galaxy collection build --force 
-ansible-galaxy collection install serversideup-spin-x.y.z.tar.gz 
-ansible-playbook -i spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars @./.spin.example.yml
+bash dev.sh
 ```
-
-This will build and install the collection locally on your machine. **Be sure to NOT commit the built collection to the repository.**
