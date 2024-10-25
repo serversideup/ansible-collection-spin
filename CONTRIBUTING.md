@@ -48,3 +48,14 @@ molecule converge # Runs the playbook
 molecule verify # Runs the tests
 molecule destroy # Destroys the container
 ```
+
+## Testing the collection
+Instead of committing to a brach and testing on another machine, it might be easier to just build the collection and install it locally.
+
+```bash
+ansible-galaxy collection build --force 
+ansible-galaxy collection install serversideup-spin-x.y.z.tar.gz 
+ansible-playbook -i spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars @./.spin.example.yml
+```
+
+This will build and install the collection locally on your machine. **Be sure to NOT commit the built collection to the repository.**
