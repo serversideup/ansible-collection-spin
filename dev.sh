@@ -1,6 +1,19 @@
 #!/bin/bash
 set -x
 
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --debug)
+      export ANSIBLE_STDOUT_CALLBACK=debug
+      shift
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
 # Set environment variables
 export ANSIBLE_WORK_DIR="${ANSIBLE_WORK_DIR:-$(pwd)}"
 export ANSIBLE_VARIABLE_FILE_NAME="${ANSIBLE_VARIABLE_FILE_NAME:-".spin.yml"}"
