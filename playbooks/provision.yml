@@ -24,7 +24,11 @@
     - name: Create servers
       include_role:
         name: serversideup.spin.create_server
-      when: providers is defined and providers|length > 0 and servers is defined and servers|length > 0
+      when: >
+        groups | select('match', '^server_') | 
+        map('extract', groups) | 
+        select('equalto', []) | 
+        list | length > 0
 
     # - name: Update inventory with new server IPs
     #   lineinfile:

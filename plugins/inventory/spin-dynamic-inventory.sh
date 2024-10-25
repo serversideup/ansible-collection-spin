@@ -157,9 +157,10 @@ generate_inventory() {
   # Hardware Profiles
   yq eval '.hardware_profiles[] | .name' "$file" | while read -r profile; do
     echo "[hardware_profile_$profile]"
-    yq eval ".servers[] | select(.hardware_profile == \"$profile\") | .server_address" "$file" | while read -r server_address; do
-      echo "$server_address"
-    done
+    servers=$(yq eval ".servers[] | select(.hardware_profile == \"$profile\" and .server_address != null) | .server_address" "$file")
+    if [ -n "$servers" ]; then
+      echo "$servers"
+    fi
     profile_backups=$(yq eval ".hardware_profiles[] | select(.name == \"$profile\") | .backups" "$file")
     if [ "$profile_backups" = "true" ] || [ "$profile_backups" = "false" ]; then
       echo "[hardware_profile_$profile:vars]"
@@ -170,9 +171,10 @@ generate_inventory() {
   # Environments
   yq eval '.environments[] | .name' "$file" | while read -r environment; do
     echo "[environment_$environment]"
-    yq eval ".servers[] | select(.environment == \"$environment\") | .server_address" "$file" | while read -r server_address; do
-      echo "$server_address"
-    done
+    servers=$(yq eval ".servers[] | select(.environment == \"$environment\" and .server_address != null) | .server_address" "$file")
+    if [ -n "$servers" ]; then
+      echo "$servers"
+    fi
     environment_backups=$(yq eval ".environments[] | select(.name == \"$environment\") | .backups" "$file")
     if [ "$environment_backups" = "true" ] || [ "$environment_backups" = "false" ]; then
       echo "[environment_$environment:vars]"
@@ -183,10 +185,12 @@ generate_inventory() {
   # Servers
   yq eval -o=json '.servers[]' "$file" | jq -c '.' | while read -r server; do
     server_name=$(echo "$server" | jq -r '.server_name')
-    server_address=$(echo "$server" | jq -r '.server_address')
+    server_address=$(echo "$server" | jq -r '.server_address // empty')
 
     echo "[server_$server_name]"
-    echo "$server_address"
+    if [ -n "$server_address" ]; then
+      echo "$server_address"
+    fi
 
     echo "[server_${server_name}:vars]"
     echo "$server" | jq -r 'to_entries[] | select(.value != null) | "\(.key)=\(.value)"'
