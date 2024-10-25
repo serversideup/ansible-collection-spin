@@ -7,31 +7,34 @@
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
     ansible_python_interpreter: auto_silent
   tasks:
-    - name: Check if providers and servers are defined
+    - name: Ensure providers, servers, and hardware profiles are defined
       ansible.builtin.fail:
-        msg: "Providers and servers must be defined in the variables file (usually '.spin.yml')."
+        msg: "You have an invalid configuration in your variables file (usually '.spin.yml'). Be sure providers, servers, and hardware_profiles are defined."
       when: >
         providers is not defined or
         providers is none or
         (providers | default([]) | length == 0) or
         servers is not defined or
         servers is none or
-        (servers | default([]) | length == 0)
+        (servers | default([]) | length == 0) or
+        hardware_profiles is not defined or
+        hardware_profiles is none or
+        (hardware_profiles | default([]) | length == 0)
 
     - name: Create servers
       include_role:
         name: serversideup.spin.create_server
       when: providers is defined and providers|length > 0 and servers is defined and servers|length > 0
 
-    - name: Update inventory with new server IPs
-      lineinfile:
-        path: "{{ inventory_file_path }}"
-        line: "{{ item }}"
-      loop: "{{ new_server_ips }}"
-      when: new_server_ips is defined
+    # - name: Update inventory with new server IPs
+    #   lineinfile:
+    #     path: "{{ inventory_file_path }}"
+    #     line: "{{ item }}"
+    #   loop: "{{ new_server_ips }}"
+    #   when: new_server_ips is defined
 
-    - name: Reload inventory
-      meta: refresh_inventory
+    # - name: Reload inventory
+    #   meta: refresh_inventory
 
 - name: Configure Docker Swarm servers.
   hosts: "{{ target | default('all') }}"
