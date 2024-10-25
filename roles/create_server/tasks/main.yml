@@ -2,7 +2,17 @@
 - name: Gather SSH keys for sudo users
   set_fact:
     sudo_user_ssh_keys: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | list }}"
-    
+
 - name: Provision Hetzner servers
   ansible.builtin.include_tasks: setup-Hetzner.yml
   when: "'provider_hetzner' in group_names"
+
+    # - name: Update inventory with new server IPs
+    #   lineinfile:
+    #     path: "{{ inventory_file_path }}"
+    #     line: "{{ item }}"
+    #   loop: "{{ new_server_ips }}"
+    #   when: new_server_ips is defined
+
+    # - name: Reload inventory
+    #   meta: refresh_inventory

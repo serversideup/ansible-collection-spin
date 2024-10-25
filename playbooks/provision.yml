@@ -30,25 +30,20 @@
         select('equalto', []) | 
         list | length > 0
 
-    # - name: Update inventory with new server IPs
-    #   lineinfile:
-    #     path: "{{ inventory_file_path }}"
-    #     line: "{{ item }}"
-    #   loop: "{{ new_server_ips }}"
-    #   when: new_server_ips is defined
-
-    # - name: Reload inventory
-    #   meta: refresh_inventory
-
 - name: Configure Docker Swarm servers.
   hosts: "{{ target | default('all') }}"
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
-  tasks:
+  vars:
+    ansible_inventory_sources: 
+      - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
+  pre_tasks:
     - name: Ensure there are hosts in the target group
-      fail:
-        msg: "No hosts found in the target group."
+      ansible.builtin.fail:
+        msg: "No hosts found in the target group '{{ target | default('all') }}'. Check your inventory configuration."
       when: groups[target | default('all')] | length == 0
+      run_once: true
+      delegate_to: localhost
 
   roles:
     - serversideup.spin.linux_common
