@@ -89,7 +89,7 @@ validate_inventory() {
   fi
 }
 
-generate_inventory() {
+generate_inventory_ini() {
   file="$ANSIBLE_VARIABLE_FILEPATH"
 
   validate_inventory
@@ -197,6 +197,36 @@ generate_inventory() {
   done
 }
 
+generate_inventory_json() {
+  ini_output=$(generate_inventory_ini)
+  
+  # Convert INI to JSON using jq
+  echo "$ini_output" | jq -Rs '
+    split("\n") | 
+    reduce .[] as $line (
+      {"_meta": {"hostvars": {}}};
+      if ($line | test("^\\[.*\\]$")) then
+        .[$line[1:-1]] = {"hosts": [], "vars": {}, "children": []}
+      elif ($line | test("^[^\\[]+:children$")) then
+        .[$line[:-9]].children += [.]
+      elif ($line | test("=")) then
+        ($line | split("=") | .[0] | gsub("^ +| +$"; "")) as $key |
+        ($line | split("=") | .[1] | gsub("^ +| +$"; "")) as $value |
+        if (.[keys[-1]].hosts | length > 0) then
+          .[keys[-1]].vars += {($key): $value}
+        else
+          ._meta.hostvars[.[keys[-1]].hosts[-1]] += {($key): $value}
+        end
+      elif ($line != "") then
+        .[keys[-1]].hosts += [$line]
+      else
+        .
+      end
+    ) | 
+    del(.[][] | select(. == []))
+  '
+}
+
 # Function to display colorized output
 display_colorized() {
   generate_inventory | awk '
@@ -209,16 +239,42 @@ display_colorized() {
 ##############################################################
 
 if [ ! -f "$ANSIBLE_VARIABLE_FILEPATH" ]; then
-  echo "Error: Variable file '$ANSIBLE_VARIABLE_FILEPATH' not found."
+  echo "Error: Variable file '$ANSIBLE_VARIABLE_FILEPATH' not found." >&2
   exit 1
 fi
 
-# TODO: Add support for decrypting `.spin.yml` with Ansible Vault
-# TODO: Add support for `.spin.inventory.yml`
+# Parse command-line arguments
+format="json"
 
-# Check for colorized output flag
-if [ "$1" = "--color" ]; then
-  display_colorized
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --format)
+      format="$2"
+      shift 2
+      ;;
+    --list)
+      # Ignore --list as it's handled implicitly
+      shift
+      ;;
+    --host)
+      echo '{}' # Return empty JSON for --host
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Generate inventory based on format
+if [ "$format" = "ini" ]; then
+  generate_inventory_ini | awk '
+    /^\[.*\]$/ {print "\033[1;34m" $0 "\033[0m"; next}
+    {print}'
+elif [ "$format" = "json" ]; then
+  generate_inventory_json
 else
-  generate_inventory
+  echo "Error: Invalid format. Use 'ini' or 'json'." >&2
+  exit 1
 fi
