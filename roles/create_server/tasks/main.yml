@@ -4,13 +4,14 @@
     sudo_user_ssh_keys: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | list }}"
 
 - name: Create servers that are missing an address
-  include_tasks: "providers/{{ hardware_profiles | selectattr('name', 'equalto', item.hardware_profile) | map(attribute='provider') | first }}.yml"
+  include_tasks: "providers/{{ server_provider }}.yml"
   loop: "{{ servers }}"
   when: item.address is not defined
   vars:
     server: "{{ item }}"
-    profile: "{{ hardware_profiles | selectattr('name', 'equalto', item.hardware_profile) | first }}"
-    provider_config: "{{ providers | selectattr('name', 'equalto', profile.provider) | first }}"
+    hardware_profile: "{{ hardware_profiles | selectattr('name', 'equalto', item.hardware_profile) | first }}"
+    server_provider: "{{ hardware_profile.provider }}"
+    provider_config: "{{ providers | selectattr('name', 'equalto', server_provider) | first }}"
   register: created_servers
 
 - name: Update .spin.example.yml with new server address

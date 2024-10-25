@@ -55,7 +55,7 @@ def merge_vars($server):
     . * {
         ("hardware_profile_" + $profile.name): {
             hosts: [],
-            vars: $profile.provider_config
+            vars: $profile.profile_config
         },
         ("provider_" + $profile.provider): {
             children: [("hardware_profile_" + $profile.name)]
