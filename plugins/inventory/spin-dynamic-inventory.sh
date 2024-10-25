@@ -1,6 +1,6 @@
 #!/bin/sh
 ANSIBLE_WORK_DIR="${ANSIBLE_WORK_DIR:-$(pwd)}"
-ANSIBLE_VARIABLE_FILE_NAME="${ANSIBLE_VARIABLE_FILE_NAME:-".spin.yml"}"
+ANSIBLE_VARIABLE_FILE_NAME="${ANSIBLE_VARIABLE_FILE_NAME:-".spin.example.yml"}"
 ANSIBLE_VARIABLE_FILEPATH="${ANSIBLE_VARIABLE_FILEPATH:-"${ANSIBLE_WORK_DIR}/${ANSIBLE_VARIABLE_FILE_NAME}"}"
 
 generate_inventory() {
@@ -10,14 +10,14 @@ def remove_null_hosts:
     walk(if type == "object" and has("hosts") and (.hosts | all(. == null)) then del(.hosts) else . end);
 
 def add_server_to_groups($server):
-    if $server.environment == "production" and $server.environment != "production-worker" then
-        {"servers_production_managers": {hosts: [($server.address // $server.server_name)]}}
-    elif $server.environment == "production-worker" then
-        {"servers_production_workers": {hosts: [($server.address // $server.server_name)]}}
-    elif $server.environment == "staging" and $server.environment != "staging-worker" then
-        {"servers_staging_managers": {hosts: [($server.address // $server.server_name)]}}
-    elif $server.environment == "staging-worker" then
-        {"servers_staging_workers": {hosts: [($server.address // $server.server_name)]}}
+    if $server.address and $server.environment == "production" and $server.environment != "production-worker" then
+        {"servers_production_managers": {hosts: [$server.address]}}
+    elif $server.address and $server.environment == "production-worker" then
+        {"servers_production_workers": {hosts: [$server.address]}}
+    elif $server.address and $server.environment == "staging" and $server.environment != "staging-worker" then
+        {"servers_staging_managers": {hosts: [$server.address]}}
+    elif $server.address and $server.environment == "staging-worker" then
+        {"servers_staging_workers": {hosts: [$server.address]}}
     else
         {}
     end;
@@ -72,29 +72,33 @@ def merge_vars($server):
 # Process servers
 ((.servers // []) | reduce .[] as $server (
     {};
-    . * {
-        ("environment_" + ($server.environment // "")): {
-            hosts: [($server.address // $server.server_name)]
-        },
-        ("hardware_profile_" + ($server.hardware_profile // "")): {
-            hosts: [($server.address // $server.server_name)]
-        },
-        ("server_" + $server.server_name): {
-            hosts: [($server.address // $server.server_name)]
-        },
-        _meta: {
-            hostvars: {
-                ($server.address // $server.server_name): merge_vars($server)
+    if $server.address then
+        . * {
+            ("environment_" + ($server.environment // "")): {
+                hosts: [$server.address]
+            },
+            ("hardware_profile_" + ($server.hardware_profile // "")): {
+                hosts: [$server.address]
+            },
+            ("server_" + $server.server_name): {
+                hosts: [$server.address]
+            },
+            _meta: {
+                hostvars: {
+                    ($server.address): merge_vars($server)
+                }
             }
-        }
-    } * 
-    add_server_to_groups($server)
+        } * 
+        add_server_to_groups($server)
+    else
+        .
+    end
 )) as $server_result |
 
 # Combine all results
 ($base * $provider_result * $hardware_profile_result * $environment_result * $server_result) |
 remove_null_hosts |
-.all.hosts = ((.servers // []) | map(.address // .server_name)) |
+.all.hosts = ((.servers // []) | map(select(.address)) | map(.address)) |
 .ungrouped.hosts = (.all.hosts - (
     [
         (.servers_production_managers.hosts // [])[], 

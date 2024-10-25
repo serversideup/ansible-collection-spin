@@ -24,11 +24,7 @@
     - name: Create servers
       include_role:
         name: serversideup.spin.create_server
-      when: >
-        groups | select('match', '^server_') | 
-        map('extract', groups) | 
-        select('equalto', []) | 
-        list | length > 0
+      when: servers | selectattr('address', 'undefined') | list | length > 0
 
 - name: Configure Docker Swarm servers.
   hosts: "{{ target | default('all') }}"
