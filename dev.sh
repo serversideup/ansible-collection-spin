@@ -9,6 +9,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
+      extra_arguments+=("$1")
       shift
       ;;
   esac
@@ -25,4 +26,4 @@ variable_file_path="${ANSIBLE_VARIABLE_FILEPATH}"
 version=$(awk '/version:/ {print $2; exit}' galaxy.yml)
 ansible-galaxy collection build --force
 ansible-galaxy collection install "serversideup-spin-${version}.tar.gz" --force
-ansible-playbook -i spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars "@${variable_file_path}"
+ansible-playbook -i spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars "@${variable_file_path}" "${extra_arguments[@]}"

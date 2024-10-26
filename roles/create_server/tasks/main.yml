@@ -1,27 +1,42 @@
 ---
-- name: Gather SSH keys for sudo users
+
+- name: Validate servers configuration
+  assert:
+    that:
+      - item.hardware_profile is defined
+      - item.hardware_profile | string | length > 0
+      - item.hardware_profile in (hardware_profiles | map(attribute='name') | list)
+      - item.environment is defined
+      - item.environment | string | length > 0
+      - item.environment in (environments | map(attribute='name') | list)
+    fail_msg: >-
+      Server '{{ item.server_name }}' validation failed:
+      {% if item.hardware_profile is not defined or not item.hardware_profile %}
+      - Missing required 'hardware_profile'
+      {% endif %}
+      {% if item.hardware_profile is defined and item.hardware_profile not in (hardware_profiles | map(attribute='name') | list) %}
+      - Invalid hardware_profile '{{ item.hardware_profile }}'. Available profiles are: {{ hardware_profiles | map(attribute='name') | list }}
+      {% endif %}
+      {% if item.environment is not defined or not item.environment %}
+      - Missing required 'environment'
+      {% endif %}
+      {% if item.environment is defined and item.environment not in (environments | map(attribute='name') | list) %}
+      - Invalid environment '{{ item.environment }}'. Available environments are: {{ environments | map(attribute='name') | list }}
+      {% endif %}
+  loop: "{{ servers }}"
+
+- name: Check if any servers are missing an address
   set_fact:
-    sudo_user_ssh_keys: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | list }}"
-
-- name: Create servers that are missing an address
-  include_tasks: "providers/{{ server_provider }}.yml"
+    servers_missing_addresses: >-
+      {{
+        servers | selectattr('address', 'undefined') | map('combine', {
+          'provider': hardware_profiles | 
+          selectattr('name', 'equalto', item.hardware_profile) | 
+          map(attribute='provider') | first
+        }) | list
+      }}
   loop: "{{ servers }}"
-  when: item.address is not defined
-  vars:
-    server: "{{ item }}"
-    hardware_profile: "{{ hardware_profiles | selectattr('name', 'equalto', item.hardware_profile) | first }}"
-    server_provider: "{{ hardware_profile.provider }}"
-    provider_config: "{{ providers | selectattr('name', 'equalto', server_provider) | first }}"
-  register: created_servers
 
-- name: Update .spin.example.yml with new server address
-  ansible.builtin.lineinfile:
-    path: "@.spin.example.yml"
-    insertafter: "^  - server_name: {{ item.server_name }}"
-    line: "    address: {{ item.address }}"
-    state: present
-  loop: "{{ servers }}"
-  when: item.address is defined and created_servers.changed
-
-- name: Reload inventory
-  meta: refresh_inventory
+- name: Create servers if any addresses are missing
+  include_tasks: "create-servers.yml"
+  when: servers_missing_addresses | length > 0
