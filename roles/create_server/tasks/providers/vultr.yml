@@ -43,3 +43,12 @@
   loop: "{{ provider_servers }}"
   loop_control:
     loop_var: server
+
+- name: Validate IP addresses for created servers
+  assert:
+    that:
+      - item.vultr_instance.main_ip is defined
+    fail_msg: "Server {{ item.vultr_instance.label }} has no IP addresses assigned"
+    success_msg: "Server {{ item.vultr_instance.label }} has valid IP configuration"
+  loop: "{{ vultr_created_servers.results }}"
+  when: not item.failed
