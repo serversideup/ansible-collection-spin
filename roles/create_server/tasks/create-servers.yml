@@ -29,8 +29,62 @@
   ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'PWD') }}/.spin.yml"
     insertafter: "server_name: {{ item.key }}"
-    line: "    server_address: {{ item.value }}"
+    line: "    address: {{ item.value }}"
   loop: "{{ server_ips | dict2items }}"
 
 - name: Reload inventory
   meta: refresh_inventory
+
+- name: Wait for SSH connection
+  wait_for:
+    host: "{{ item.value }}"
+    port: 22
+    delay: 10
+    timeout: 300
+  loop: "{{ server_ips | dict2items }}"
+
+- name: Update and upgrade all packages (this might take a while depending on your host)
+  apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+    autoclean: yes
+  become: true
+  delegate_to: "{{ item.value }}"
+  loop: "{{ server_ips | dict2items }}"
+  vars:
+    ansible_user: root
+
+- name: Check if reboot is required
+  stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+  become: true
+  delegate_to: "{{ item.value }}"
+  loop: "{{ server_ips | dict2items }}"
+  vars:
+    ansible_user: root
+
+- name: Reboot server if required
+  reboot:
+    reboot_timeout: 600
+  become: true
+  delegate_to: "{{ item.value }}"
+  when: "reboot_required.results[ansible_loop.index0].stat.exists"
+  loop: "{{ server_ips | dict2items }}"
+  loop_control:
+    extended: yes
+  register: reboot_result
+  vars:
+    ansible_user: root
+
+- name: Wait for SSH connection after reboot
+  wait_for:
+    host: "{{ item.value }}"
+    port: 22
+    delay: 10
+    timeout: 300
+  loop: "{{ server_ips | dict2items }}"
+  when: reboot_result.changed
+  vars:
+    ansible_user: root
