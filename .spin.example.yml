@@ -19,20 +19,6 @@ users:
   #     - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
 
 ##############################################################
-# 👇 Servers - You must set at least one server
-##############################################################
-
-servers:
-  # - server_name: ubuntu-2gb-ash-1
-  #   environment: production
-  #   hardware_profile: hetzner-2c-2gb-ubuntu24.04
-  #   backups: true
-
-  # - server_name: ubuntu-1gb-ord-2
-  #   environment: staging
-  #   hardware_profile: vultr-1c-1gb-ubuntu24.04
-
-##############################################################
 # 👇 Providers - You must set at least one provider
 ##############################################################
 
@@ -46,6 +32,20 @@ providers:
 
 #   - name: vultr
 #     api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
+
+##############################################################
+# 👇 Servers - You must set at least one server
+##############################################################
+
+servers:
+  # - server_name: ubuntu-2gb-ash-1
+  #   environment: production
+  #   hardware_profile: hetzner-2c-2gb-ubuntu24.04
+  #   backups: true
+
+  # - server_name: ubuntu-1gb-ord-2
+  #   environment: staging
+  #   hardware_profile: vultr-1c-1gb-ubuntu24.04
 
 ##############################################################
 # 👇 Deploy User - If you're using GitHub Actions, create a dedicated deploy key
