@@ -113,5 +113,5 @@ hardware_profiles:
     provider: vultr
     profile_config:
       region: ord
-      server_plan: vc2-1c-1gb
+      plan: vc2-1c-1gb
       image: "Ubuntu 24.04 LTS x64"
