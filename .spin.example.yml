@@ -25,12 +25,12 @@ users:
 servers:
   # - server_name: ubuntu-2gb-ash-1
   #   environment: production
-  #   hardware_profile: 2g-2vcpu-hetzner-ubuntu
+  #   hardware_profile: hetzner-2c-2gb-ubuntu24.04
   #   backups: true
 
-  # - server_name: ubuntu-2gb-ash-2
+  # - server_name: ubuntu-1gb-ord-2
   #   environment: staging
-  #   hardware_profile: 2g-2vcpu-vultr-ubuntu
+  #   hardware_profile: vultr-1c-1gb-ubuntu24.04
 
 ##############################################################
 # 👇 Providers - You must set at least one provider
@@ -38,14 +38,14 @@ servers:
 
 providers:
 #   - name: digitalocean
-#     do_api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
+#     api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
 
 #   - name: hetzner
 #     api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
 #     backups: true
 
 #   - name: vultr
-#     vultr_api_key: Set token here OR delete this line and set environment variable VULTR_API_KEY
+#     api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
 
 ##############################################################
 # 👇 Deploy User - If you're using GitHub Actions, create a dedicated deploy key
@@ -101,17 +101,17 @@ environments:
 ##############################################################
 
 hardware_profiles:
-  - name: 2g-2vcpu-hetzner-ubuntu
+  - name: hetzner-2c-2gb-ubuntu24.04
     provider: hetzner
     profile_config:
-      server_type: cpx11
-      image: ubuntu22.04
       location: ash
+      server_type: cpx11
+      image: ubuntu-24.04
       backups: true
 
-  - name: 2g-2vcpu-vultr-ubuntu
+  - name: vultr-1c-1gb-ubuntu24.04
     provider: vultr
     profile_config:
-      server_plan: vc2-2c-4gb
-      image: ubuntu22.04
-      region: chi
+      region: ord
+      server_plan: vc2-1c-1gb
+      image: "Ubuntu 24.04 LTS x64"
