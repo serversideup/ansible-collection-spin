@@ -11,9 +11,9 @@
 
 - name: Create SSH keys for sudo users if they don't exist in Hetzner Cloud
   hetzner.hcloud.ssh_key:
+    api_token: "{{ hetzner_api_token }}"
     name: "{{ item.0.username }}-{{ item.1.public_key | hash('md5') }}"
     public_key: "{{ item.1.public_key }}"
-    api_token: "{{ hetzner_api_token }}"
     state: present
   loop: "{{ sudo_users | subelements('authorized_keys') }}"
   register: hetzner_created_ssh_keys
