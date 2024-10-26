@@ -114,4 +114,4 @@ hardware_profiles:
     profile_config:
       region: ord
       plan: vc2-1c-1gb
-      image: "Ubuntu 24.04 LTS x64"
+      os: "Ubuntu 24.04 LTS x64"
