@@ -41,7 +41,7 @@ providers:
 #     do_api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
 
 #   - name: hetzner
-#     hcloud_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
+#     api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
 #     backups: true
 
 #   - name: vultr
@@ -103,7 +103,7 @@ environments:
 hardware_profiles:
   - name: 2g-2vcpu-hetzner-ubuntu
     provider: hetzner
-    provider_config:
+    profile_config:
       server_type: cx11
       image: ubuntu22.04
       location: ash
@@ -111,7 +111,7 @@ hardware_profiles:
 
   - name: 2g-2vcpu-vultr-ubuntu
     provider: vultr
-    provider_config:
+    profile_config:
       server_plan: vc2-2c-4gb
       image: ubuntu22.04
       region: chi
