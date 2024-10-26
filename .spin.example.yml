@@ -104,7 +104,7 @@ hardware_profiles:
   - name: 2g-2vcpu-hetzner-ubuntu
     provider: hetzner
     profile_config:
-      server_type: cx11
+      server_type: cpx11
       image: ubuntu22.04
       location: ash
       backups: true
