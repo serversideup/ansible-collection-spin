@@ -24,3 +24,13 @@
       {%- endfor -%}
       {{- result -}}
     provider_config: "{{ providers | selectattr('name', 'equalto', provider) | first }}"
+
+- name: Update .spin.yml with server IPs
+  ansible.builtin.lineinfile:
+    path: "{{ lookup('env', 'PWD') }}/.spin.yml"
+    insertafter: "server_name: {{ item.key }}"
+    line: "    server_address: {{ item.value }}"
+  loop: "{{ server_ips | dict2items }}"
+
+- name: Reload inventory
+  meta: refresh_inventory

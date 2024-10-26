@@ -51,3 +51,11 @@
     success_msg: "Server {{ item.hcloud_server.name }} has valid IP configuration"
   loop: "{{ hetzner_created_servers.results }}"
   when: not item.failed
+
+- name: Set main IP address for each server
+  set_fact:
+    server_ips: "{{ server_ips | default({}) | combine({
+      item.hcloud_server.name: (item.hcloud_server.ipv4_address or item.hcloud_server.ipv6)
+    }) }}"
+  loop: "{{ hetzner_created_servers.results }}"
+  when: not item.failed

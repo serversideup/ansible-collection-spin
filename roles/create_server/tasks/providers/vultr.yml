@@ -52,3 +52,11 @@
     success_msg: "Server {{ item.vultr_instance.label }} has valid IP configuration"
   loop: "{{ vultr_created_servers.results }}"
   when: not item.failed
+
+- name: Set main IP address for each server
+  set_fact:
+    server_ips: "{{ server_ips | default({}) | combine({
+      item.vultr_instance.label: item.vultr_instance.main_ip
+    }) }}"
+  loop: "{{ vultr_created_servers.results }}"
+  when: not item.failed
