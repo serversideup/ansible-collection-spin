@@ -26,4 +26,4 @@ variable_file_path="${ANSIBLE_VARIABLE_FILEPATH}"
 version=$(awk '/version:/ {print $2; exit}' galaxy.yml)
 ansible-galaxy collection build --force
 ansible-galaxy collection install "serversideup-spin-${version}.tar.gz" --force
-ansible-playbook -i spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars "@${variable_file_path}" "${extra_arguments[@]}"
+ansible-playbook -i plugins/inventory/spin-dynamic-inventory.sh playbooks/provision.yml --extra-vars "@${variable_file_path}" "${extra_arguments[@]}"
