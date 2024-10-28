@@ -28,7 +28,6 @@ providers:
 
 #   - name: hetzner
 #     api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
-#     backups: true
 
 #   - name: vultr
 #     api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
@@ -48,17 +47,33 @@ servers:
   #   hardware_profile: vultr-1c-1gb-ubuntu24.04
 
 ##############################################################
-# 👇 Deploy User - If you're using GitHub Actions, create a dedicated deploy key
+# 🤖 Hardware Profiles
 ##############################################################
 
-### Learn how to create a secure DEPLOY key and enter the public value below
-## https://serversideup.net/open-source/spin/docs/advanced/generating-a-secure-ssh-key#generating-a-deployment-key
+hardware_profiles:
+  - name: hetzner-2c-2gb-ubuntu24.04
+    provider: hetzner
+    profile_config:
+      location: ash
+      server_type: cpx11
+      image: ubuntu-24.04
+      backups: true
 
-# docker_user:
-#   username: deploy
-#   authorized_ssh_keys: 
-#     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKNJGtd7a4DBHsQi7HGrC5xz0eAEFHZ3Ogh3FEFI2345 fake@key"
-#     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
+  - name: vultr-1c-1gb-ubuntu24.04
+    provider: vultr
+    profile_config:
+      region: ord
+      plan: vc2-1c-1gb
+      os: "Ubuntu 24.04 LTS x64"
+      backups: true
+
+##############################################################
+# 🌎 Environments
+##############################################################
+environments:
+  - name: production
+  - name: staging
+  - name: development
 
 ##############################################################
 # 🤓 Advanced Server Configuration
@@ -88,30 +103,9 @@ postfix_hostname: "{{ inventory_hostname }}"
 # postfix_relayhost_username: "myusername"
 # postfix_relayhost_password: "mysupersecretpassword"
 
-##############################################################
-# 🌎 Environments
-##############################################################
-environments:
-  - name: production
-  - name: staging
-  - name: development
-
-##############################################################
-# 🤖 Hardware Profiles
-##############################################################
-
-hardware_profiles:
-  - name: hetzner-2c-2gb-ubuntu24.04
-    provider: hetzner
-    profile_config:
-      location: ash
-      server_type: cpx11
-      image: ubuntu-24.04
-      backups: true
-
-  - name: vultr-1c-1gb-ubuntu24.04
-    provider: vultr
-    profile_config:
-      region: ord
-      plan: vc2-1c-1gb
-      os: "Ubuntu 24.04 LTS x64"
+## Deploy user customization - You can customize the deploy user below if you'd like
+# docker_user:
+#   username: deploy
+#   authorized_ssh_keys: 
+#     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKNJGtd7a4DBHsQi7HGrC5xz0eAEFHZ3Ogh3FEFI2345 fake@key"
+#     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
