@@ -66,6 +66,14 @@ hardware_profiles:
       plan: vc2-1c-1gb
       os: "Ubuntu 24.04 LTS x64"
       backups: true
+  
+  - name: digitalocean-1c-1gb-ubuntu24.04
+    provider: digitalocean
+    profile_config:
+      region: nyc3
+      size: s-1vcpu-1gb
+      image: ubuntu-24-04-x64
+      backups: true
 
 ##############################################################
 # 🌎 Environments
