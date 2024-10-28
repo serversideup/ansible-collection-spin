@@ -51,6 +51,7 @@ servers:
 ##############################################################
 
 hardware_profiles:
+  # Hetzner
   - name: hetzner-2c-2gb-ubuntu24.04
     provider: hetzner
     profile_config:
@@ -59,6 +60,7 @@ hardware_profiles:
       image: ubuntu-24.04
       backups: true
 
+  # Vultr
   - name: vultr-1c-1gb-ubuntu24.04
     provider: vultr
     profile_config:
@@ -67,6 +69,7 @@ hardware_profiles:
       os: "Ubuntu 24.04 LTS x64"
       backups: true
   
+  # DigitalOcean
   - name: digitalocean-1c-1gb-ubuntu24.04
     provider: digitalocean
     profile_config:
