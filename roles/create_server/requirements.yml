@@ -2,4 +2,4 @@
 collections:
   - name: hetzner.hcloud
   - name: vultr.cloud
-  - name: digitalocean.cloud
+  - name: community.digitalocean
