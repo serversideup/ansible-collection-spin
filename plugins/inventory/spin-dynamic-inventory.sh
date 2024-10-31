@@ -85,9 +85,6 @@ def merge_vars($server):
             ("hardware_profile_" + ($server.hardware_profile // "")): {
                 hosts: [$server.address]
             },
-            ("server_" + $server.server_name): {
-                hosts: [$server.address]
-            },
             _meta: {
                 hostvars: {
                     ($server.address): merge_vars($server)
@@ -219,11 +216,6 @@ validate_inventory() {
 
   # Check server names
   invalid_ansible_names=$(
-    # Check server names
-    echo "$server_names" | while read -r name; do
-      validate_ansible_name "$name" "server_name"
-    done
-
     # Check environment names
     yq eval '.environments[].name' "$file" | while read -r name; do
       validate_ansible_name "$name" "environment"
