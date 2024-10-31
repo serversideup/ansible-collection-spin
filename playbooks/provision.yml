@@ -2,10 +2,6 @@
 - name: Create servers with the VPS provider of your choice.
   hosts: localhost
   gather_facts: false
-  vars:
-    ansible_port: "{{ ssh_port }}"
-    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
-    ansible_python_interpreter: auto_silent
   tasks:
     - name: Ensure providers, servers, and hardware profiles are defined
       ansible.builtin.fail:
@@ -31,6 +27,9 @@
   remote_user: "{{ ansible_user | default('root') }}"
   become: true
   vars:
+    ansible_port: "{{ ssh_port }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
+    ansible_python_interpreter: auto_silent
     ansible_inventory_sources: 
       - plugin: script
         path: "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
