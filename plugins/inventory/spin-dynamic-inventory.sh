@@ -33,6 +33,9 @@ def merge_vars($server):
     (.["environment_" + ($server.environment // "")].vars // {}) *
     $server;
 
+def sanitize_group_name($name):
+    $name | gsub("[\\.-]"; "_");
+
 # Base structure
 {
     _meta: {hostvars: {}},
@@ -58,12 +61,12 @@ def merge_vars($server):
 ((.hardware_profiles // []) | reduce .[] as $profile (
     {};
     . * {
-        ("hardware_profile_" + $profile.name): {
+        ("hardware_profile_" + ($profile.name | sanitize_group_name)): {
             hosts: [],
             vars: $profile.profile_config
         },
         ("provider_" + $profile.provider): {
-            children: [("hardware_profile_" + $profile.name)]
+            children: [("hardware_profile_" + ($profile.name | sanitize_group_name))]
         }
     }
 )) as $hardware_profile_result |
@@ -82,10 +85,10 @@ def merge_vars($server):
             ("environment_" + ($server.environment // "")): {
                 hosts: [$server.address]
             },
-            ("hardware_profile_" + ($server.hardware_profile // "")): {
+            ("hardware_profile_" + ($server.hardware_profile // "") | sanitize_group_name): {
                 hosts: [$server.address]
             },
-            ("server_" + $server.server_name): {
+            ("server_" + ($server.server_name | sanitize_group_name)): {
                 hosts: [$server.address]
             },
             _meta: {
