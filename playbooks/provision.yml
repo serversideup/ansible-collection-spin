@@ -26,7 +26,8 @@
     - name: Update created servers
       include_role:
         name: serversideup.spin.update_server
-      delegate_to: "{{ item.value }}"
+        apply:
+          delegate_to: "{{ item.value }}"
       loop: "{{ server_ips | dict2items }}"
       when: server_ips is defined and server_ips | length > 0
 
