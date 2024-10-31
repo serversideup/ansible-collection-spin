@@ -32,7 +32,8 @@
   become: true
   vars:
     ansible_inventory_sources: 
-      - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
+      - plugin: script
+        path: "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
   pre_tasks:
     - name: Ensure there are hosts in the target group
       ansible.builtin.fail:
