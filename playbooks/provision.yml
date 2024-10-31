@@ -14,9 +14,6 @@
         providers is not defined or
         providers is none or
         (providers | default([]) | length == 0) or
-        servers is not defined or
-        servers is none or
-        (servers | default([]) | length == 0) or
         hardware_profiles is not defined or
         hardware_profiles is none or
         (hardware_profiles | default([]) | length == 0)
