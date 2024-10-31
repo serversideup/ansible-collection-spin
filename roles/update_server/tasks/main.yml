@@ -1,0 +1,36 @@
+---
+- name: Wait for SSH connection
+  ansible.builtin.wait_for:
+    host: "{{ inventory_hostname }}"
+    port: 22
+    delay: 10
+    timeout: 300
+
+- name: Update and upgrade all packages (this might take a while depending on your host)
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+    autoclean: yes
+  become: true
+
+- name: Check if reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+  become: true
+
+- name: Reboot server if required
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  become: true
+  when: reboot_required.stat.exists
+  register: reboot_result
+
+- name: Wait for SSH connection after reboot
+  ansible.builtin.wait_for:
+    host: "{{ inventory_hostname }}"
+    port: 22
+    delay: 10
+    timeout: 300
+  when: reboot_result.changed
