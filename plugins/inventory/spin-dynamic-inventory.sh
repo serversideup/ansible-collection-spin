@@ -33,9 +33,6 @@ def merge_vars($server):
     (.["environment_" + ($server.environment // "")].vars // {}) *
     $server;
 
-def sanitize_group_name($name):
-    $name | gsub("[\\.-]"; "_");
-
 # Base structure
 {
     _meta: {hostvars: {}},
@@ -61,12 +58,12 @@ def sanitize_group_name($name):
 ((.hardware_profiles // []) | reduce .[] as $profile (
     {};
     . * {
-        ("hardware_profile_" + ($profile.name | sanitize_group_name)): {
+        ("hardware_profile_" + $profile.name): {
             hosts: [],
             vars: $profile.profile_config
         },
         ("provider_" + $profile.provider): {
-            children: [("hardware_profile_" + ($profile.name | sanitize_group_name))]
+            children: [("hardware_profile_" + $profile.name)]
         }
     }
 )) as $hardware_profile_result |
@@ -85,10 +82,10 @@ def sanitize_group_name($name):
             ("environment_" + ($server.environment // "")): {
                 hosts: [$server.address]
             },
-            ("hardware_profile_" + ($server.hardware_profile // "") | sanitize_group_name): {
+            ("hardware_profile_" + ($server.hardware_profile // "")): {
                 hosts: [$server.address]
             },
-            ("server_" + ($server.server_name | sanitize_group_name)): {
+            ("server_" + $server.server_name): {
                 hosts: [$server.address]
             },
             _meta: {
@@ -208,6 +205,44 @@ validate_inventory() {
   if [ -n "$invalid_profiles" ]; then
     echo "[ERROR] Invalid inventory file. Undefined hardware profiles found:"
     echo "$invalid_profiles"
+    exit 1
+  fi
+
+  # Validate names against Ansible standards
+  validate_ansible_name() {
+    local name="$1"
+    local type="$2"
+    if ! echo "$name" | grep -Eq '^[a-zA-Z_][a-zA-Z0-9_]*$'; then
+      echo "$name ($type)"
+    fi
+  }
+
+  # Check server names
+  invalid_ansible_names=$(
+    # Check server names
+    echo "$server_names" | while read -r name; do
+      validate_ansible_name "$name" "server_name"
+    done
+
+    # Check environment names
+    yq eval '.environments[].name' "$file" | while read -r name; do
+      validate_ansible_name "$name" "environment"
+    done
+
+    # Check hardware profile names
+    yq eval '.hardware_profiles[].name' "$file" | while read -r name; do
+      validate_ansible_name "$name" "hardware_profile"
+    done
+
+    # Check provider names
+    yq eval '.providers[].name' "$file" | while read -r name; do
+      validate_ansible_name "$name" "provider"
+    done
+  )
+
+  if [ -n "$invalid_ansible_names" ]; then
+    echo "[ERROR] Invalid inventory file. Names not following Ansible standards (must start with letter/underscore, contain only letters/numbers/underscores):"
+    echo "$invalid_ansible_names"
     exit 1
   fi
 }
