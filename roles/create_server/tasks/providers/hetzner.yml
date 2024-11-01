@@ -29,6 +29,46 @@
         (hetzner_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='hcloud_ssh_key.id') | list)
       }}
 
+- name: Ensure firewall exists.
+  hetzner.hcloud.firewall:
+    name: spin-web-firewall
+    rules:
+      - description: allow icmp from everywhere
+        direction: in
+        protocol: icmp
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow ssh from everywhere
+        direction: in
+        protocol: tcp
+        port: 22
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow http from everywhere
+        direction: in
+        protocol: tcp
+        port: 80
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow https from everywhere
+        direction: in
+        protocol: tcp
+        port: 443
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow ssh tunnel from everywhere
+        direction: in
+        protocol: tcp
+        port: 2222
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+    state: present
+
 - name: Create Hetzner server
   hetzner.hcloud.server:
     name: "{{ server.server_name }}"
@@ -38,6 +78,8 @@
     location: "{{ server.hardware_profile_config.location }}"
     backups: "{{ server.backups | default(true) }}"
     ssh_keys: "{{ sudo_user_hetzner_ssh_key_ids }}"
+    firewalls:
+      - spin-web-firewall
   register: hetzner_created_servers
   loop: "{{ provider_servers }}"
   loop_control:
