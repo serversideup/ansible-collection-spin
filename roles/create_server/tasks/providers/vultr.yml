@@ -55,7 +55,7 @@
 
 - name: Set main IP address for each server
   set_fact:
-    server_ips: "{{ server_ips | default({}) | combine({
+    newly_created_server_ips: "{{ newly_created_server_ips | default({}) | combine({
       item.vultr_instance.label: item.vultr_instance.main_ip
     }) }}"
   loop: "{{ vultr_created_servers.results }}"

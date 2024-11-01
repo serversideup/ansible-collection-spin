@@ -54,7 +54,7 @@
 
 - name: Set main IP address for each server
   set_fact:
-    server_ips: "{{ server_ips | default({}) | combine({
+    newly_created_server_ips: "{{ newly_created_server_ips | default({}) | combine({
       item.hcloud_server.name: (item.hcloud_server.ipv4_address or item.hcloud_server.ipv6)
     }) }}"
   loop: "{{ hetzner_created_servers.results }}"

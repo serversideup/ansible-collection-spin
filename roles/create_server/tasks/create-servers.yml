@@ -30,7 +30,7 @@
     path: "{{ lookup('env', 'PWD') }}/.spin.yml"
     insertafter: "server_name: {{ item.key }}"
     line: "    address: {{ item.value }}"
-  loop: "{{ server_ips | dict2items }}"
+  loop: "{{ newly_created_server_ips | dict2items }}"
 
 - name: Reload inventory
   meta: refresh_inventory

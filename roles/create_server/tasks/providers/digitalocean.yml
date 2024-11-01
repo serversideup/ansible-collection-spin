@@ -54,7 +54,7 @@
 
 - name: Set main IP address for each server
   set_fact:
-    server_ips: "{{ server_ips | default({}) | combine({
+    newly_created_server_ips: "{{ newly_created_server_ips | default({}) | combine({
       item.data.droplet.name: (
         item.data.droplet.networks.v4 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first |
         default(item.data.droplet.networks.v6 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first)
