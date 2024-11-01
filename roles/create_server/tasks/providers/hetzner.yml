@@ -32,6 +32,7 @@
 - name: Ensure firewall exists.
   hetzner.hcloud.firewall:
     name: spin-web-firewall
+    api_token: "{{ hetzner_api_token }}"
     rules:
       - description: allow icmp from everywhere
         direction: in
