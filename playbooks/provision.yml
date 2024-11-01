@@ -23,6 +23,26 @@
         name: serversideup.spin.create_server
       when: servers | selectattr('address', 'undefined') | list | length > 0
 
+- name: Update newly created servers.
+  hosts: "{{ target | default('all') }}"
+  gather_facts: false
+  remote_user: "{{ ansible_user | default('root') }}"
+  become: true
+  vars:
+    ansible_port: "{{ ssh_port }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
+    ansible_python_interpreter: auto_silent
+    ansible_inventory_sources: 
+      - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
+  tasks:
+    - name: Update created servers
+      include_role:
+        name: serversideup.spin.update_server
+        apply:
+          delegate_to: "{{ item.value }}"
+      loop: "{{ newly_created_server_ips | dict2items }}"
+      when: newly_created_server_ips is defined and newly_created_server_ips | length > 0
+
 - name: Configure Docker Swarm servers.
   hosts: "{{ target | default('all') }}"
   remote_user: "{{ ansible_user | default('root') }}"
@@ -34,13 +54,6 @@
     ansible_inventory_sources: 
       - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
   pre_tasks:
-    - name: Update created servers
-      include_role:
-        name: serversideup.spin.update_server
-        apply:
-          delegate_to: "{{ item.value }}"
-      loop: "{{ newly_created_server_ips | dict2items }}"
-      when: newly_created_server_ips is defined and newly_created_server_ips | length > 0
     - name: Ensure there are hosts in the target group
       ansible.builtin.fail:
         msg: "No hosts found in the target group '{{ target | default('all') }}'. Check your inventory configuration."
