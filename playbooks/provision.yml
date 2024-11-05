@@ -29,7 +29,7 @@
       delegate_facts: true
 
 - name: Configure Docker Swarm servers.
-  hosts: "{{ target | default('all') }}"
+  hosts: "{{ (hostvars['localhost']['newly_created_server_ips'] | default({})).values() | list | default(target) | default('all') }}"
   remote_user: "{{ (inventory_hostname in (hostvars['localhost']['newly_created_server_ips'] | default({})).values()) | ternary(initial_ssh_user | default('root'), spin_remote_user) }}"
   become: true
   vars:
@@ -41,7 +41,7 @@
   pre_tasks:
     - name: Show error if no hosts found in the target group.
       ansible.builtin.fail:
-        msg: "No hosts found in the target group '{{ target | default('all') }}'. Check your inventory configuration."
+        msg: "No hosts found in the target group '{{ (hostvars['localhost']['newly_created_server_ips'] | default({})).values() | list | default(target) | default('all') }}'. Check your inventory configuration."
       when: groups[target | default('all')] | length == 0
       run_once: true
       delegate_to: localhost
