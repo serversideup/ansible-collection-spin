@@ -41,8 +41,6 @@
     ansible_port: "{{ ssh_port }}"
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
     ansible_python_interpreter: auto_silent
-    ansible_inventory_sources: 
-      - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
   pre_tasks:
     - name: Show error if no hosts found in the target group.
       ansible.builtin.fail:
