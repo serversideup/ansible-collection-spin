@@ -16,13 +16,13 @@ def remove_null_hosts:
 
 def add_server_to_groups($server):
     if $server.address and $server.environment == "production" and $server.environment != "production-worker" then
-        {"servers_production_managers": {hosts: [$server.address]}}
+        {"servers_production_managers": {hosts: ((.servers_production_managers.hosts // []) + [$server.address])}}
     elif $server.address and $server.environment == "production-worker" then
-        {"servers_production_workers": {hosts: [$server.address]}}
+        {"servers_production_workers": {hosts: ((.servers_production_workers.hosts // []) + [$server.address])}}
     elif $server.address and $server.environment == "staging" and $server.environment != "staging-worker" then
-        {"servers_staging_managers": {hosts: [$server.address]}}
+        {"servers_staging_managers": {hosts: ((.servers_staging_managers.hosts // []) + [$server.address])}}
     elif $server.address and $server.environment == "staging-worker" then
-        {"servers_staging_workers": {hosts: [$server.address]}}
+        {"servers_staging_workers": {hosts: ((.servers_staging_workers.hosts // []) + [$server.address])}}
     else
         {}
     end;
@@ -68,22 +68,16 @@ def merge_vars($server):
     }
 )) as $hardware_profile_result |
 
-# Process environments
-((.environments // []) | reduce .[] as $env (
-    {};
-    . * {("environment_" + $env.name): {hosts: [], vars: ($env | del(.name))}}
-)) as $environment_result |
-
 # Process servers
 ((.servers // []) | reduce .[] as $server (
     {};
     if $server.address then
         . * {
-            ("environment_" + ($server.environment // "")): {
-                hosts: [$server.address]
-            },
             ("hardware_profile_" + ($server.hardware_profile // "")): {
-                hosts: [$server.address]
+                hosts: (
+                    (.[("hardware_profile_" + ($server.hardware_profile // ""))].hosts // []) + 
+                    [$server.address]
+                )
             },
             _meta: {
                 hostvars: {
@@ -98,7 +92,7 @@ def merge_vars($server):
 )) as $server_result |
 
 # Combine all results
-($base * $provider_result * $hardware_profile_result * $environment_result * $server_result) |
+($base * $provider_result * $hardware_profile_result * $server_result) |
 remove_null_hosts |
 .all.hosts = ((.servers // []) | map(select(.address)) | map(.address)) |
 .ungrouped.hosts = (.all.hosts - (
