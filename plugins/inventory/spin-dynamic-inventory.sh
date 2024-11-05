@@ -15,13 +15,13 @@ def remove_null_hosts:
     walk(if type == "object" and has("hosts") and (.hosts | all(. == null)) then del(.hosts) else . end);
 
 def add_server_to_groups($server):
-    if $server.address and $server.environment == "production" and $server.environment != "production-worker" then
+    if $server.address and $server.environment == "production" and $server.environment != "production_workers" then
         {"servers_production_managers": {hosts: ((.servers_production_managers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "production-worker" then
+    elif $server.address and $server.environment == "production_workers" then
         {"servers_production_workers": {hosts: ((.servers_production_workers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "staging" and $server.environment != "staging-worker" then
+    elif $server.address and $server.environment == "staging" and $server.environment != "staging_workers" then
         {"servers_staging_managers": {hosts: ((.servers_staging_managers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "staging-worker" then
+    elif $server.address and $server.environment == "staging_workers" then
         {"servers_staging_workers": {hosts: ((.servers_staging_workers.hosts // []) + [$server.address])}}
     else
         {}
@@ -173,8 +173,15 @@ validate_inventory() {
 
   # Validate environments against defined environments
   defined_environments=$(yq eval '.environments[].name' "$file")
+  # Create extended environment list with _workers and _managers variants
+  extended_environments=$(echo "$defined_environments" | while read -r env; do
+    echo "$env"
+    echo "${env}_workers"
+    echo "${env}_managers"
+  done)
+  
   invalid_environments=$(echo "$environments" | while read -r env; do
-    if ! echo "$defined_environments" | grep -q "^${env}$"; then
+    if ! echo "$extended_environments" | grep -q "^${env}$"; then
       echo "$env"
     fi
   done)
