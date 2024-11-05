@@ -88,3 +88,8 @@
   when: reboot_result.changed
   vars:
     ansible_user: "{{ initial_ssh_user | default('root') }}"
+
+- name: Export newly created server IPs.
+  set_fact:
+    newly_created_server_ips: "{{ newly_created_server_ips | default({}) }}"
+  delegate_facts: true
