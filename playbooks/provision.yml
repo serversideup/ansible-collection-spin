@@ -25,7 +25,7 @@
 
 - name: Configure Docker Swarm servers.
   hosts: "{{ target | default('all') }}"
-  remote_user: "{{ ansible_user | default('root') }}"
+  remote_user: "{{ (inventory_hostname in newly_created_server_ips.values()) | ternary(initial_ssh_user | default('root'), spin_remote_user) }}"
   become: true
   vars:
     ansible_port: "{{ ssh_port }}"

@@ -53,7 +53,7 @@
   delegate_to: "{{ item.value }}"
   loop: "{{ newly_created_server_ips | dict2items }}"
   vars:
-    ansible_user: root
+    ansible_user: "{{ initial_ssh_user | default('root') }}"
 
 - name: Check if reboot is required
   stat:
@@ -63,7 +63,7 @@
   delegate_to: "{{ item.value }}"
   loop: "{{ newly_created_server_ips | dict2items }}"
   vars:
-    ansible_user: root
+    ansible_user: "{{ initial_ssh_user | default('root') }}"
 
 - name: Reboot server if required
   reboot:
@@ -76,7 +76,7 @@
     extended: yes
   register: reboot_result
   vars:
-    ansible_user: root
+    ansible_user: "{{ initial_ssh_user | default('root') }}"
 
 - name: Wait for SSH connection after reboot
   wait_for:
@@ -87,4 +87,4 @@
   loop: "{{ newly_created_server_ips | dict2items }}"
   when: reboot_result.changed
   vars:
-    ansible_user: root
+    ansible_user: "{{ initial_ssh_user | default('root') }}"
