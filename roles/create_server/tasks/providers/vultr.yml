@@ -28,7 +28,6 @@
         (vultr_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='vultr_ssh_key.name') | list)
       }}
 
-# Firewall
 - name: Ensure firewall group is present.
   vultr.cloud.firewall_group:
     api_key: "{{ vultr_api_token }}"
@@ -114,7 +113,6 @@
       subnet_size: 0
       description: "allow ssh tunnel from everywhere"
 
-# Create server
 - name: Create Vultr server
   vultr.cloud.instance:
     api_key: "{{ vultr_api_token }}"
