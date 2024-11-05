@@ -1,15 +1,15 @@
 ---
 - name: Gather sudo users with their SSH keys
-  set_fact:
+  ansible.builtin.set_fact:
     sudo_users: "{{ users | selectattr('groups', 'contains', 'sudo') | list }}"
 
 - name: Get unique providers from servers
-  set_fact:
+  ansible.builtin.set_fact:
     unique_providers: "{{ hardware_profiles | 
       selectattr('name', 'in', servers_missing_addresses | map(attribute='hardware_profile') | list) | map(attribute='provider') | list }}"
 
 - name: Include provider-specific tasks
-  include_tasks: "providers/{{ provider }}.yml"
+  ansible.builtin.include_tasks: "providers/{{ provider }}.yml"
   loop: "{{ unique_providers }}"
   loop_control:
     loop_var: provider
@@ -25,71 +25,14 @@
       {{- result -}}
     provider_config: "{{ providers | selectattr('name', 'equalto', provider) | first }}"
 
-- name: Update .spin.yml with server IPs
+- name: Write newly created server addresses to .spin.yml
   ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'PWD') }}/.spin.yml"
-    insertafter: "server_name: {{ item.key }}"
-    line: "    address: {{ item.value }}"
-  loop: "{{ newly_created_server_ips | dict2items }}"
+    insertafter: "server_name: {{ item }}"
+    line: "    address: {{ hostvars[item].ansible_host }}"
+  loop: "{{ groups['newly_created_servers'] }}"
 
-- name: Reload inventory
-  meta: refresh_inventory
-
-- name: Wait for SSH connection
-  wait_for:
-    host: "{{ item.value }}"
-    port: 22
-    delay: 10
-    timeout: 300
-  loop: "{{ newly_created_server_ips | dict2items }}"
-
-- name: Update and upgrade all packages (this might take a while depending on your host)
-  apt:
-    update_cache: yes
-    upgrade: yes
-    autoremove: yes
-    autoclean: yes
-  become: true
-  delegate_to: "{{ item.value }}"
-  loop: "{{ newly_created_server_ips | dict2items }}"
-  vars:
-    ansible_user: "{{ initial_ssh_user | default('root') }}"
-
-- name: Check if reboot is required
-  stat:
-    path: /var/run/reboot-required
-  register: reboot_required
-  become: true
-  delegate_to: "{{ item.value }}"
-  loop: "{{ newly_created_server_ips | dict2items }}"
-  vars:
-    ansible_user: "{{ initial_ssh_user | default('root') }}"
-
-- name: Reboot server if required
-  reboot:
-    reboot_timeout: 600
-  become: true
-  delegate_to: "{{ item.value }}"
-  when: "reboot_required.results[ansible_loop.index0].stat.exists"
-  loop: "{{ newly_created_server_ips | dict2items }}"
-  loop_control:
-    extended: yes
-  register: reboot_result
-  vars:
-    ansible_user: "{{ initial_ssh_user | default('root') }}"
-
-- name: Wait for SSH connection after reboot
-  wait_for:
-    host: "{{ item.value }}"
-    port: 22
-    delay: 10
-    timeout: 300
-  loop: "{{ newly_created_server_ips | dict2items }}"
-  when: reboot_result.changed
-  vars:
-    ansible_user: "{{ initial_ssh_user | default('root') }}"
-
-- name: Export newly created server IPs.
-  set_fact:
-    newly_created_server_ips: "{{ newly_created_server_ips | default({}) }}"
+- name: Store newly created servers in fact
+  ansible.builtin.set_fact:
+    newly_created_servers: "{{ groups['newly_created_servers'] }}"
   delegate_facts: true

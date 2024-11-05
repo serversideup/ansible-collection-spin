@@ -1,6 +1,6 @@
 ---
 - name: Set Vultr API token
-  set_fact:
+  ansible.builtin.set_fact:
     vultr_api_token: "{{ provider_config.api_token | default(lookup('env', 'VULTR_API_KEY')) }}"
   no_log: true
 
@@ -21,7 +21,7 @@
     item.1.public_key not in (vultr_existing_ssh_keys.vultr_ssh_key_info | map(attribute='ssh_key') | list)
 
 - name: Set SSH key names for server creation
-  set_fact:
+  ansible.builtin.set_fact:
     sudo_user_vultr_ssh_key_names: >-
       {{
         (vultr_existing_ssh_keys.vultr_ssh_key_info | map(attribute='name') | list) +
@@ -38,14 +38,14 @@
     backups: "{{ server.backups | default(true) }}"
     ssh_keys: "{{ sudo_user_vultr_ssh_key_names }}"
     activation_email: "{{ server.hardware_profile_config.activation_email | default(true) }}"
-    tags: "{{ server.environment | default('')}}"
+    tags: "{{ server.environment | default('') }}"
   register: vultr_created_servers
   loop: "{{ provider_servers }}"
   loop_control:
     loop_var: server
 
 - name: Validate IP addresses for created servers
-  assert:
+  ansible.builtin.assert:
     that:
       - item.vultr_instance.main_ip is defined
     fail_msg: "Server {{ item.vultr_instance.label }} has no IP addresses assigned"
@@ -53,10 +53,10 @@
   loop: "{{ vultr_created_servers.results }}"
   when: not item.failed
 
-- name: Set main IP address for each server
-  set_fact:
-    newly_created_server_ips: "{{ newly_created_server_ips | default({}) | combine({
-      item.vultr_instance.label: item.vultr_instance.main_ip
-    }) }}"
+- name: Set main IP address and add servers to in-memory inventory
+  ansible.builtin.add_host:
+    name: "{{ item.vultr_instance.label }}"
+    ansible_host: "{{ item.vultr_instance.main_ip }}"
+    groups: newly_created_servers
   loop: "{{ vultr_created_servers.results }}"
   when: not item.failed

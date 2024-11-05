@@ -4,8 +4,6 @@
   gather_facts: false
   vars:
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
-    ansible_inventory_sources: 
-      - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
   tasks:
     - name: Ensure providers, servers, and hardware profiles are defined
       ansible.builtin.fail:
@@ -19,13 +17,25 @@
         (hardware_profiles | default([]) | length == 0)
 
     - name: Create servers
-      include_role:
+      ansible.builtin.include_role:
         name: serversideup.spin.create_server
       when: servers | selectattr('address', 'undefined') | list | length > 0
 
+- name: Update newly created servers
+  hosts: newly_created_servers
+  gather_facts: false
+  remote_user: "{{ initial_ssh_user | default('root') }}"
+  become: true
+  vars:
+    ansible_port: "{{ ssh_port }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
+    ansible_python_interpreter: auto_silent
+  roles:
+    - serversideup.spin.update_server 
+
 - name: Configure Docker Swarm servers.
-  hosts: "{{ newly_created_server_ips.values() | default([]) | list or target | default('all') }}"
-  remote_user: "{{ (inventory_hostname in (hostvars['localhost']['newly_created_server_ips'] | default({})).values()) | ternary(initial_ssh_user | default('root'), spin_remote_user) }}"
+  hosts: "{{ hostvars['localhost'].newly_created_servers | default([]) if hostvars['localhost'].newly_created_servers is defined else (target | default('all')) }}"
+  remote_user: "{{ (inventory_hostname in (hostvars['localhost'].newly_created_servers | default([]))) | ternary(initial_ssh_user | default('root'), spin_remote_user | default('root')) }}"
   become: true
   vars:
     ansible_port: "{{ ssh_port }}"
@@ -36,7 +46,7 @@
   pre_tasks:
     - name: Show error if no hosts found in the target group.
       ansible.builtin.fail:
-        msg: "No hosts found in the target group '{{ newly_created_server_ips.values() | default([]) | list or target | default('all') }}'. Check your inventory configuration."
+        msg: "No hosts found in the target group '{{ hostvars['localhost'].newly_created_servers | default([]) if hostvars['localhost'].newly_created_servers is defined else (target | default('all')) }}'. Check your inventory configuration."
       when: groups[target | default('all')] | length == 0
       run_once: true
       delegate_to: localhost

@@ -5,6 +5,8 @@
     msg: "No users are set. You must set at least one user under 'users' or 'additional_users' in '.spin.yml'."
   when: >
     ((users | default([])) + (additional_users | default([]))) | length == 0
+  run_once: true
+  delegate_to: localhost
 
 - name: Show error if user is missing a password and passwordless sudo is disabled.
   ansible.builtin.fail:
@@ -16,6 +18,8 @@
   loop: "{{ users + additional_users | default([]) }}"
   loop_control:
     label: "{{ item.username }}"
+  run_once: true
+  delegate_to: localhost
 
 - name: Show error if no users belong to the sudo group.
   ansible.builtin.fail:
@@ -23,6 +27,8 @@
   when: >
     ((users | default([])) + (additional_users | default([]))) | selectattr('groups', 'defined') | 
     selectattr('groups', 'contains', 'sudo') | list | length == 0
+  run_once: true
+  delegate_to: localhost
 
 - name: Show warning if server_contact is unchanged.
   ansible.builtin.assert:
@@ -34,8 +40,12 @@
   register: server_contact_check
   failed_when: false
   changed_when: server_contact_check is failed
+  run_once: true
+  delegate_to: localhost
 
 - name: Display warning if server_contact is not changed
   ansible.builtin.debug:
     msg: "{{ server_contact_check.fail_msg }}"
   when: server_contact_check is failed
+  run_once: true
+  delegate_to: localhost

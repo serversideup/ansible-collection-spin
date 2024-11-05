@@ -1,9 +1,6 @@
 ---
-- name: Wait for SSH connection
-  ansible.builtin.wait_for:
-    host: "{{ inventory_hostname }}"
-    port: 22
-    delay: 10
+- name: Ensure SSH connection is established (wait up to 5 minutes)
+  ansible.builtin.wait_for_connection:
     timeout: 300
 
 - name: Update and upgrade all packages (this might take a while depending on your host)
@@ -27,10 +24,7 @@
   when: reboot_required.stat.exists
   register: reboot_result
 
-- name: Wait for SSH connection after reboot
-  ansible.builtin.wait_for:
-    host: "{{ inventory_hostname }}"
-    port: 22
-    delay: 10
+- name: Wait for SSH connection after reboot (wait up to 5 minutes)
+  ansible.builtin.wait_for_connection:
     timeout: 300
   when: reboot_result.changed

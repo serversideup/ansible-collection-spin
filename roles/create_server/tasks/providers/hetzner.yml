@@ -1,6 +1,6 @@
 ---
 - name: Set Hetzner API token
-  set_fact:
+  ansible.builtin.set_fact:
     hetzner_api_token: "{{ provider_config.api_token | default(lookup('env', 'HCLOUD_TOKEN')) }}"
   no_log: true
 
@@ -22,7 +22,7 @@
     (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='public_key') | list)
 
 - name: Set SSH key IDs for server creation
-  set_fact:
+  ansible.builtin.set_fact:
     sudo_user_hetzner_ssh_key_ids: >-
       {{
         (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='id') | list) +
@@ -87,7 +87,7 @@
     loop_var: server
 
 - name: Validate IP addresses for created servers
-  assert:
+  ansible.builtin.assert:
     that:
       - item.hcloud_server.ipv4_address is defined or item.hcloud_server.ipv6 is defined
     fail_msg: "Server {{ item.hcloud_server.name }} has no IP addresses assigned"
@@ -95,10 +95,10 @@
   loop: "{{ hetzner_created_servers.results }}"
   when: not item.failed
 
-- name: Set main IP address for each server
-  set_fact:
-    newly_created_server_ips: "{{ newly_created_server_ips | default({}) | combine({
-      item.hcloud_server.name: (item.hcloud_server.ipv4_address or item.hcloud_server.ipv6)
-    }) }}"
+- name: Set main IP address and add servers to in-memory inventory
+  ansible.builtin.add_host:
+    name: "{{ item.hcloud_server.name }}"
+    ansible_host: "{{ item.hcloud_server.ipv4_address or item.hcloud_server.ipv6 }}"
+    groups: newly_created_servers
   loop: "{{ hetzner_created_servers.results }}"
   when: not item.failed

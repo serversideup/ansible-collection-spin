@@ -1,7 +1,7 @@
 ---
 
 - name: Validate servers configuration
-  assert:
+  ansible.builtin.assert:
     that:
       - item.hardware_profile is defined
       - item.hardware_profile | string | length > 0
@@ -24,9 +24,11 @@
       - Invalid environment '{{ item.environment }}'. Available environments are: {{ environments | map(attribute='name') | list }}
       {% endif %}
   loop: "{{ servers }}"
+  run_once: true
+  delegate_to: localhost
 
 - name: Check if any servers are missing an address
-  set_fact:
+  ansible.builtin.set_fact:
     servers_missing_addresses: >-
       {{
         servers | selectattr('address', 'undefined') | map('combine', {
@@ -38,5 +40,5 @@
   loop: "{{ servers }}"
 
 - name: Create servers if any addresses are missing
-  include_tasks: "create-servers.yml"
+  ansible.builtin.include_tasks: "create-servers.yml"
   when: servers_missing_addresses | length > 0
