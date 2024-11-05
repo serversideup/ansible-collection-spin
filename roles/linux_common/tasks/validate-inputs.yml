@@ -7,6 +7,7 @@
     ((users | default([])) + (additional_users | default([]))) | length == 0
   run_once: true
   delegate_to: localhost
+  connection: local
 
 - name: Show error if user is missing a password and passwordless sudo is disabled.
   ansible.builtin.fail:
@@ -20,6 +21,7 @@
     label: "{{ item.username }}"
   run_once: true
   delegate_to: localhost
+  connection: local
 
 - name: Show error if no users belong to the sudo group.
   ansible.builtin.fail:
@@ -29,6 +31,7 @@
     selectattr('groups', 'contains', 'sudo') | list | length == 0
   run_once: true
   delegate_to: localhost
+  connection: local
 
 - name: Show warning if server_contact is unchanged.
   ansible.builtin.assert:
@@ -42,6 +45,7 @@
   changed_when: server_contact_check is failed
   run_once: true
   delegate_to: localhost
+  connection: local
 
 - name: Display warning if server_contact is not changed
   ansible.builtin.debug:
@@ -49,3 +53,4 @@
   when: server_contact_check is failed
   run_once: true
   delegate_to: localhost
+  connection: local
