@@ -40,7 +40,6 @@ servers:
   # - server_name: ubuntu-2gb-ash-1
   #   environment: production
   #   hardware_profile: hetzner_2c_2gb_ubuntu2404
-  #   backups: true
 
   # - server_name: ubuntu-1gb-ord-2
   #   environment: staging
