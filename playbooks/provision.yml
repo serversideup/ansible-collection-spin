@@ -39,7 +39,7 @@
     ansible_inventory_sources: 
       - "{{ playbook_dir }}/../plugins/inventory/spin-dynamic-inventory.sh"
   pre_tasks:
-    - name: Ensure there are hosts in the target group
+    - name: Show error if no hosts found in the target group.
       ansible.builtin.fail:
         msg: "No hosts found in the target group '{{ target | default('all') }}'. Check your inventory configuration."
       when: groups[target | default('all')] | length == 0
