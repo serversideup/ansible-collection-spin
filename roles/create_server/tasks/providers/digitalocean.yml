@@ -29,6 +29,13 @@
         (do_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='data.ssh_key.fingerprint') | list)
       }}
 
+- name: Get existing firewall configuration
+  community.digitalocean.digital_ocean_firewall_info:
+    oauth_token: "{{ do_api_token }}"
+    name: "spin-web-firewall"
+  register: existing_firewall
+  ignore_errors: true  # In case firewall doesn't exist yet
+
 - name: Create Digital Ocean droplet
   community.digitalocean.digital_ocean_droplet:
     oauth_token: "{{ do_api_token }}"
@@ -42,6 +49,51 @@
   loop: "{{ provider_servers }}"
   loop_control:
     loop_var: server
+
+- name: Ensure firewall exists and is assigned to droplet
+  community.digitalocean.digital_ocean_firewall:
+    name: "spin-web-firewall"
+    oauth_token: "{{ do_api_token }}"
+    droplet_ids: >-
+      {{
+        (existing_firewall.data[0].droplet_ids | default([])) +
+        (do_droplet.results | map(attribute='data.droplet.id') | list)
+      }}
+    inbound_rules:
+      - protocol: icmp
+        ports: "1-65535"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "22"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "80"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "443"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "2222"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+    outbound_rules:
+      - protocol: tcp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: udp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: icmp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+    state: present
 
 - name: Validate IP addresses for created servers
   ansible.builtin.assert:
