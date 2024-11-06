@@ -3,12 +3,13 @@
   ansible.builtin.wait_for_connection:
     timeout: 300
 
-- name: Update and upgrade all packages (this might take a while depending on your host)
+- name: Update and upgrade all packages (this might take a while depending on your host and server's performance)
   ansible.builtin.apt:
     update_cache: yes
     upgrade: yes
     autoremove: yes
     autoclean: yes
+    lock_timeout: 600
   become: true
 
 - name: Check if reboot is required
