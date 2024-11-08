@@ -1,0 +1,37 @@
+---
+- name: Get First Manager Host for Environment
+  hosts: localhost
+  gather_facts: false
+  vars:
+    environment: "{{ lookup('env', 'MANAGER_ENVIRONMENT') | default('', true) }}"
+    group_name: "servers_{{ environment }}_managers"
+    ansible_verbosity: 0
+
+  tasks:
+    - name: Fail if environment is not set
+      ansible.builtin.fail:
+        msg: "MANAGER_ENVIRONMENT is not set"
+      when: not environment
+
+    - name: Get first manager host for environment
+      ansible.builtin.set_fact:
+        first_manager: "{{ groups[group_name][0] }}"
+      when: groups[group_name] is defined and groups[group_name] | length > 0
+
+    - name: Output first manager host
+      ansible.builtin.shell: "echo '{{ first_manager }}'"
+      register: raw_output
+      changed_when: false
+      when: first_manager is defined
+      
+    - name: Print only host
+      ansible.builtin.debug:
+        msg: "{{ raw_output.stdout }}"
+      when: first_manager is defined
+      vars:
+        ansible_verbosity: 0
+      
+    - name: Fail if no manager found
+      ansible.builtin.fail:
+        msg: "No hosts found in {{ group_name }} group"
+      when: first_manager is not defined
