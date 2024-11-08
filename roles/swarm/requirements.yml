@@ -1,5 +1,7 @@
 ---
 collections:
-  - name: ansible.posix
   - name: community.docker
   - name: community.general
+
+roles:
+  - role: serversideup.spin.docker_user
