@@ -9,4 +9,4 @@
     ansible_python_interpreter: auto_silent
   roles:
     - role: serversideup.spin.swarm
-      tags: spin-configure
+      tags: spin-configure-gha

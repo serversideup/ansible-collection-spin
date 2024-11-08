@@ -2,10 +2,13 @@
 - name: Install Docker (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
+  tags: install-docker
 
 - name: Configure Docker User.
   ansible.builtin.include_tasks: configure-docker-user.yml
-  tags: spin-configure
+  tags:
+    - spin-configure-gha
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml
+  tags: configure-swarm
