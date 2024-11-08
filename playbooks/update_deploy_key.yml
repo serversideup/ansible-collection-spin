@@ -2,7 +2,6 @@
 - name: Update deploy user authorized keys.
   hosts: "{{ target | default('all') }}"
   remote_user: "{{ spin_remote_user | default('root') }}"
-  gather_facts: false
   become: true
   vars:
     ansible_port: "{{ ssh_port }}"
