@@ -15,3 +15,8 @@
     - name: Output keys
       ansible.builtin.debug:
         msg: "{{ sudo_keys }}"
+      no_log: true  # Suppress task status output
+
+    - name: Print raw keys
+      ansible.builtin.shell: "echo '{{ sudo_keys }}'"
+      changed_when: false  # Prevent "changed" status output
