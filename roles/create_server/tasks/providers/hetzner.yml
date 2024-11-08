@@ -9,14 +9,6 @@
     api_token: "{{ hetzner_api_token }}"
   register: hetzner_existing_ssh_keys
 
-- name: Set normalized existing SSH keys
-  set_fact:
-    normalized_existing_keys: >-
-      {{ hetzner_existing_ssh_keys.hcloud_ssh_key_info | 
-         map(attribute='public_key') | 
-         map('regex_replace', '"$', '') | 
-         list }}
-
 - name: Create SSH keys for sudo users if they don't exist in Hetzner Cloud
   hetzner.hcloud.ssh_key:
     api_token: "{{ hetzner_api_token }}"
@@ -25,7 +17,9 @@
     state: present
   loop: "{{ sudo_users | subelements('authorized_keys') }}"
   register: hetzner_created_ssh_keys
-  when: item.1.public_key not in normalized_existing_keys
+  when: >
+    item.1.public_key not in 
+    (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='public_key') | map('regex_replace', '"$', '') | list)
 
 - name: Set SSH key IDs for server creation
   ansible.builtin.set_fact:
