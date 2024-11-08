@@ -15,14 +15,12 @@ def remove_null_hosts:
     walk(if type == "object" and has("hosts") and (.hosts | all(. == null)) then del(.hosts) else . end);
 
 def add_server_to_groups($server):
-    if $server.address and $server.environment == "production" and $server.environment != "production_workers" then
-        {"servers_production_managers": {hosts: ((.servers_production_managers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "production_workers" then
-        {"servers_production_workers": {hosts: ((.servers_production_workers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "staging" and $server.environment != "staging_workers" then
-        {"servers_staging_managers": {hosts: ((.servers_staging_managers.hosts // []) + [$server.address])}}
-    elif $server.address and $server.environment == "staging_workers" then
-        {"servers_staging_workers": {hosts: ((.servers_staging_workers.hosts // []) + [$server.address])}}
+    if $server.address and $server.environment then
+        if ($server.environment | endswith("_workers")) then
+            {("servers_" + $server.environment): {hosts: ((.["servers_" + $server.environment].hosts // []) + [$server.address])}}
+        else
+            {("servers_" + $server.environment + "_managers"): {hosts: ((.["servers_" + $server.environment + "_managers"].hosts // []) + [$server.address])}}
+        end
     else
         {}
     end;
@@ -36,17 +34,31 @@ def merge_vars($server):
 # Base structure
 {
     _meta: {hostvars: {}},
-    all: {children: ["ungrouped", "production", "staging"], hosts: []},
-    ungrouped: {hosts: []},
-    servers_production_managers: {hosts: []},
-    servers_production_workers: {hosts: []},
-    servers_staging_managers: {hosts: []},
-    servers_staging_workers: {hosts: []},
-    swarm_managers: {children: ["servers_production_managers", "servers_staging_managers"]},
-    swarm_workers: {children: ["servers_production_workers", "servers_staging_workers"]},
-    production: {children: ["servers_production_managers", "servers_production_workers"]},
-    staging: {children: ["servers_staging_managers", "servers_staging_workers"]}
-} as $base |
+    all: {children: ["ungrouped"], hosts: []},
+    ungrouped: {hosts: []}
+} as $initial_base |
+
+# Build dynamic base structure from environments
+(.environments // [] | reduce .[] as $env (
+    $initial_base;
+    . * {
+        ("servers_" + $env.name + "_managers"): {hosts: []},
+        ("servers_" + $env.name + "_workers"): {hosts: []},
+        ($env.name): {children: [
+            ("servers_" + $env.name + "_managers"),
+            ("servers_" + $env.name + "_workers")
+        ]},
+        "all": {
+            children: (.all.children + [$env.name])
+        },
+        "swarm_managers": {
+            children: ((.swarm_managers.children // []) + [("servers_" + $env.name + "_managers")])
+        },
+        "swarm_workers": {
+            children: ((.swarm_workers.children // []) + [("servers_" + $env.name + "_workers")])
+        }
+    }
+)) as $base |
 
 # Process providers
 ((.providers // []) | reduce .[] as $provider (
@@ -97,17 +109,12 @@ remove_null_hosts |
 .all.hosts = ((.servers // []) | map(select(.address)) | map(.address)) |
 .ungrouped.hosts = (.all.hosts - (
     [
-        (.servers_production_managers.hosts // [])[], 
-        (.servers_production_workers.hosts // [])[], 
-        (.servers_staging_managers.hosts // [])[], 
-        (.servers_staging_workers.hosts // [])[]
-    ] | unique
+        (.environments // [] | .[].name | . as $env |
+            [(["servers_" + $env + "_managers", "servers_" + $env + "_workers"] | 
+            map(.[].hosts // [])[])]
+        )[]
+    ] | flatten | unique
 )) |
-# Ensure all groups exist, even if empty
-.servers_production_managers.hosts //= [] |
-.servers_production_workers.hosts //= [] |
-.servers_staging_managers.hosts //= [] |
-.servers_staging_workers.hosts //= [] |
 # Add _meta.hostvars if not present
 ._meta.hostvars //= {}
 '
