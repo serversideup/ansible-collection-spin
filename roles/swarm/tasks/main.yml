@@ -5,7 +5,7 @@
 
 - name: Configure Docker User.
   ansible.builtin.include_tasks: configure-docker-user.yml
-  tags: configure-docker-user
+  tags: spin-configure
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml

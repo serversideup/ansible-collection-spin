@@ -30,6 +30,7 @@
     state: present
     key: "{{ deploy_public_key }}"
   when: deploy_public_key is defined
+  tags: spin-configure
 
 - name: Add public keys of admin or sudo users to Docker user
   ansible.posix.authorized_key:
