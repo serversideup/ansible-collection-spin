@@ -115,6 +115,14 @@ remove_null_hosts |
         )[]
     ] | flatten | unique
 )) |
+# Ensure ALL groups have a hosts key with empty array if missing
+walk(
+    if type == "object" and (has("children") | not) and (has("hosts") | not) then
+        . + {hosts: []}
+    else
+        .
+    end
+) |
 # Add _meta.hostvars if not present
 ._meta.hostvars //= {}
 '
