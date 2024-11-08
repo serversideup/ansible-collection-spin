@@ -10,4 +10,4 @@
     ansible_python_interpreter: auto_silent
   roles:
     - role: serversideup.spin.swarm
-      tags: update-deploy-user-authorized-keys
+      tags: configure-docker-user
