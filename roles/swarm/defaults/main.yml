@@ -22,22 +22,10 @@ docker_apt_ignore_key_error: true
 docker_apt_gpg_key: "{{ docker_repo_url }}/{{ ansible_distribution | lower }}/gpg"
 docker_apt_gpg_key_checksum: "sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570"
 
-# Docker user configuration.
-docker_user:
-  username: deploy
-  uid: 9999
-  group: deploy
-  secondary_groups: "docker"
-  gid: 9999
-  ## Uncomment to set authorized SSH keys for the docker user.
-  # authorized_ssh_keys: 
-  #   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKNJGtd7a4DBHsQi7HGrC5xz0eAEFHZ3Ogh3FEFI2345 fake@key"
-  #   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
-
 # Docker Swarm configuration.
 docker_swarm:
   # Use "default_ipv4.address" and fail to first available IP if not set.
-  advertise_addr: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }}"
+  advertise_addr: "{{ ansible_default_ipv4.address | default(ansible_default_ipv6.address | default(ansible_all_ipv4_addresses[0] | default(ansible_all_ipv6_addresses[0]))) }}"
 
 ##############################################################
 # Users

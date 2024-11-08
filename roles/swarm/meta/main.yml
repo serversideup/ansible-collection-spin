@@ -1,0 +1,3 @@
+---
+dependencies:
+  - role: serversideup.spin.docker_user

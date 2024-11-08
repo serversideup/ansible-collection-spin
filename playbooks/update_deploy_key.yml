@@ -8,5 +8,4 @@
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
     ansible_python_interpreter: auto_silent
   roles:
-    - role: serversideup.spin.swarm
-      tags: spin-configure-gha
+    - role: serversideup.spin.docker_user

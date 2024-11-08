@@ -5,9 +5,8 @@
   tags: install-docker
 
 - name: Configure Docker User.
-  ansible.builtin.include_tasks: configure-docker-user.yml
-  tags:
-    - spin-configure-gha
+  ansible.builtin.include_role:
+    name: serversideup.spin.docker_user
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml
