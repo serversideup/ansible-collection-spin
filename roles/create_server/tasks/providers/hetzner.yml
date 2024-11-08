@@ -19,7 +19,8 @@
   register: hetzner_created_ssh_keys
   when: >
     item.1.public_key not in 
-    (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='public_key') | list)
+    (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='public_key') | list) and
+    item.1.public_key is defined
 
 - name: Set SSH key IDs for server creation
   ansible.builtin.set_fact:
