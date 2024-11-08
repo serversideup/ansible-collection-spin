@@ -196,6 +196,8 @@ validate_inventory() {
   if [ -n "$invalid_environments" ]; then
     echo "[ERROR] Invalid inventory file. Undefined environments found:"
     echo "$invalid_environments"
+    echo "" 
+    echo "Make sure your server environments match the defined environments in your .spin.yml file."
     exit 1
   fi
 
