@@ -3,11 +3,22 @@
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Extract and output sudo users' SSH keys
-      ansible.builtin.debug:
-        msg: >-
+    - name: Extract sudo users' SSH keys
+      ansible.builtin.set_fact:
+        sudo_keys: >-
           {{
             users | selectattr('groups', 'contains', 'sudo') |
             map(attribute='authorized_keys') | flatten |
             map(attribute='public_key') | join('\n')
           }}
+
+    - name: Output raw keys
+      ansible.builtin.shell: "echo '{{ sudo_keys }}'"
+      register: raw_output
+      changed_when: false
+
+    - name: Print only keys
+      ansible.builtin.debug:
+        msg: "{{ raw_output.stdout }}"
+      vars:
+        ansible_verbosity: 0
