@@ -36,10 +36,18 @@
         dest: "{{ spin_ci_folder_full_path }}/AUTHORIZED_KEYS"
         mode: '0600'
 
-    - name: Set SSH_REMOTE_KNOWN_HOSTS file with keyscan of manager hosts
+    - name: Run ssh-keyscan on manager hosts.
       ansible.builtin.shell: >-
-        ssh-keyscan -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} > {{ spin_ci_folder_full_path }}/SSH_REMOTE_KNOWN_HOSTS
+        ssh-keyscan -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} | sort
+      register: keyscan_result
       when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
+
+    - name: Write SSH_REMOTE_KNOWN_HOSTS file
+      ansible.builtin.copy:
+        content: "{{ keyscan_result.stdout }}\n"
+        dest: "{{ spin_ci_folder_full_path }}/SSH_REMOTE_KNOWN_HOSTS"
+        mode: '0600'
+      when: keyscan_result.stdout is defined
 
 
 - name: Update deploy user authorized keys.
