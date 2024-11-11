@@ -1,0 +1,52 @@
+---
+- name: Prepare CI environment.
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display failure if required variables are not set.
+      ansible.builtin.fail:
+        msg: "{{ item }} variable is not set. Use -e {{ item }}=<env_value>"
+      when: item is not defined
+      loop:
+        - spin_environment
+        - spin_ci_folder
+
+    - name: Set {{ spin_environment | upper }}_SSH_REMOTE_HOST with first manager host
+      ansible.builtin.copy:
+        content: "{{ groups['servers_' + spin_environment + '_managers'][0] }}"
+        dest: "{{ spin_ci_folder }}/{{ spin_environment | upper }}_SSH_REMOTE_HOST"
+      when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
+
+    - name: Set AUTHORIZED_KEYS file with sudo users' SSH keys
+      ansible.builtin.copy:
+        content: >-
+          {{
+            users | selectattr('groups', 'contains', 'sudo') |
+            map(attribute='authorized_keys') | flatten |
+            map(attribute='public_key') | join('\n')
+          }}
+        dest: "{{ spin_ci_folder }}/AUTHORIZED_KEYS"
+        mode: '0600'
+
+    - name: Set SSH_REMOTE_KNOWN_HOSTS file with keyscan of manager hosts
+      ansible.builtin.shell: >-
+        ssh-keyscan -H -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} > {{ spin_ci_folder }}/SSH_REMOTE_KNOWN_HOSTS
+      when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
+
+
+- name: Update deploy user authorized keys.
+  hosts: "{{ target | default('all') }}"
+  remote_user: "{{ spin_remote_user | default('root') }}"
+  gather_facts: false
+  become: true
+  vars:
+    ansible_port: "{{ ssh_port }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
+    ansible_python_interpreter: auto_silent
+  pre_tasks:
+    - name: Display failure if deploy_public_key is not set.
+      ansible.builtin.fail:
+        msg: "deploy_public_key variable is not set. Use -e deploy_public_key=<key_value>"
+      when: deploy_public_key is not defined
+  roles:
+    - role: serversideup.spin.docker_user
