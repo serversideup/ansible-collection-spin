@@ -41,6 +41,7 @@
         ssh-keyscan -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} | sort
       register: keyscan_result
       when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
+      changed_when: false
 
     - name: Write SSH_REMOTE_KNOWN_HOSTS file
       ansible.builtin.copy:
