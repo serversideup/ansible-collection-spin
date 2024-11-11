@@ -10,16 +10,25 @@
       loop:
         - spin_environment
         - spin_ci_folder
+      tags:
+        - always
+        - get-host
 
     - name: Set fact of full path to CI folder
       ansible.builtin.set_fact:
         spin_ci_folder_full_path: "{{ spin_ci_folder_full_path | default('/ansible/' + spin_ci_folder) }}"
+      tags:
+        - always
+        - get-host
 
     - name: Set {{ spin_environment | upper }}_SSH_REMOTE_HOST with first manager host
       ansible.builtin.copy:
         content: "{{ groups['servers_' + spin_environment + '_managers'][0] }}"
         dest: "{{ spin_ci_folder_full_path }}/{{ spin_environment | upper }}_SSH_REMOTE_HOST"
       when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
+      tags:
+        - always
+        - get-host
 
     - name: Set AUTHORIZED_KEYS file with sudo users' SSH keys
       ansible.builtin.copy:
