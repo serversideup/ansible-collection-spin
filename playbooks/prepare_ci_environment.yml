@@ -23,12 +23,7 @@
 
     - name: Set AUTHORIZED_KEYS file with sudo users' SSH keys
       ansible.builtin.copy:
-        content: >-
-          {{
-            users | selectattr('groups', 'contains', 'sudo') |
-            map(attribute='authorized_keys') | flatten |
-            map(attribute='public_key') | join('\n')
-          }}
+        content: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | join('\n') }}\n"
         dest: "{{ spin_ci_folder_full_path }}/AUTHORIZED_KEYS"
         mode: '0600'
 
