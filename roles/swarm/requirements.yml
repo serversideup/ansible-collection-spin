@@ -4,4 +4,4 @@ collections:
   - name: community.general
 
 roles:
-  - role: serversideup.spin.docker_user
+  - name: serversideup.spin.docker_user
