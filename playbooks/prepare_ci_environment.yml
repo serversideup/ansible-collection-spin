@@ -11,10 +11,14 @@
         - spin_environment
         - spin_ci_folder
 
+    - name: Set fact of full path to CI folder
+      ansible.builtin.set_fact:
+        spin_ci_folder_full_path: "{{ spin_ci_folder_full_path | default('/ansible/' + spin_ci_folder) }}"
+
     - name: Set {{ spin_environment | upper }}_SSH_REMOTE_HOST with first manager host
       ansible.builtin.copy:
         content: "{{ groups['servers_' + spin_environment + '_managers'][0] }}"
-        dest: "{{ spin_ci_folder }}/{{ spin_environment | upper }}_SSH_REMOTE_HOST"
+        dest: "{{ spin_ci_folder_full_path }}/{{ spin_environment | upper }}_SSH_REMOTE_HOST"
       when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
 
     - name: Set AUTHORIZED_KEYS file with sudo users' SSH keys
@@ -25,12 +29,12 @@
             map(attribute='authorized_keys') | flatten |
             map(attribute='public_key') | join('\n')
           }}
-        dest: "{{ spin_ci_folder }}/AUTHORIZED_KEYS"
+        dest: "{{ spin_ci_folder_full_path }}/AUTHORIZED_KEYS"
         mode: '0600'
 
     - name: Set SSH_REMOTE_KNOWN_HOSTS file with keyscan of manager hosts
       ansible.builtin.shell: >-
-        ssh-keyscan -H -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} > {{ spin_ci_folder }}/SSH_REMOTE_KNOWN_HOSTS
+        ssh-keyscan -H -p {{ ssh_port }} {{ groups['servers_' + spin_environment + '_managers'] | join(' ') }} > {{ spin_ci_folder_full_path }}/SSH_REMOTE_KNOWN_HOSTS
       when: groups['servers_' + spin_environment + '_managers'] is defined and groups['servers_' + spin_environment + '_managers'] | length > 0
 
 
