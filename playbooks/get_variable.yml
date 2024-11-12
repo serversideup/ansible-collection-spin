@@ -9,8 +9,17 @@
       when: variable_name is not defined
       run_once: true
 
-    - name: Output variable value
-      ansible.builtin.debug:
-        msg: "{{ lookup('vars', variable_name) }}"
+    - name: Create output directory if it doesn't exist
+      ansible.builtin.file:
+        path: /output
+        state: directory
+        mode: '0700'
+      run_once: true
+
+    - name: Write variable value to file
+      ansible.builtin.copy:
+        content: "{{ lookup('vars', variable_name) }}"
+        dest: "/output/{{ variable_name }}"
+        mode: '0600'
       when: variable_name in vars
       run_once: true
