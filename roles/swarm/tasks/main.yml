@@ -10,4 +10,3 @@
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml
-  tags: configure-swarm
