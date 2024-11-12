@@ -61,6 +61,12 @@
       run_once: true
       delegate_to: localhost
 
+    - name: Show groups for current host
+      ansible.builtin.debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Groups: {{ group_names }}"
+
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm
