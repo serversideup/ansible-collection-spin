@@ -141,7 +141,7 @@
 
 - name: Set main IP address and add servers to in-memory inventory
   ansible.builtin.add_host:
-    name: "{{ item.vultr_instance.label }}"
+    name: "{{ item.vultr_instance.main_ip }}"
     ansible_host: "{{ item.vultr_instance.main_ip }}"
     groups: newly_created_servers
   loop: "{{ vultr_created_servers.results }}"
