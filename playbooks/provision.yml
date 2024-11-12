@@ -32,7 +32,7 @@
         newly_created_servers: >-
           {{
             groups['newly_created_servers'] | map('extract', hostvars) |
-            map(attribute='address') | list
+            map(attribute='ansible_host') | list
           }}
       delegate_to: localhost
       run_once: true
