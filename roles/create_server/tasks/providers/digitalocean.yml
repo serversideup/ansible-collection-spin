@@ -106,14 +106,12 @@
 
 - name: Set main IP address and add servers to in-memory inventory
   ansible.builtin.add_host:
-    name: "{{ server_ip }}"
-    ansible_host: "{{ server_ip }}"
-    groups: newly_created_servers
-  vars:
-    server_ip: >-
+    name: "{{ item.data.droplet.name }}"
+    ansible_host: >-
       {{
         item.data.droplet.networks.v4 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first |
         default(item.data.droplet.networks.v6 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first)
       }}
+    groups: newly_created_servers
   loop: "{{ do_droplet.results }}"
   when: not item.skipped | default(false)

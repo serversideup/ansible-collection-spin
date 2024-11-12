@@ -97,7 +97,7 @@
 
 - name: Set main IP address and add servers to in-memory inventory
   ansible.builtin.add_host:
-    name: "{{ item.hcloud_server.ipv4_address or item.hcloud_server.ipv6 }}"
+    name: "{{ item.hcloud_server.name }}"
     ansible_host: "{{ item.hcloud_server.ipv4_address or item.hcloud_server.ipv6 }}"
     groups: newly_created_servers
   loop: "{{ hetzner_created_servers.results }}"

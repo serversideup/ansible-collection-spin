@@ -26,21 +26,6 @@
   gather_facts: false
   remote_user: "{{ initial_ssh_user | default('root') }}"
   become: true
-  post_tasks:
-    - name: Save newly created servers address for later use
-      ansible.builtin.set_fact:
-        newly_created_servers: >-
-          {{
-            groups['newly_created_servers'] | map('extract', hostvars) |
-            map(attribute='ansible_host') | list
-          }}
-      delegate_to: localhost
-      run_once: true
-    - name: Refresh inventory to ensure all hosts are available
-      ansible.builtin.meta: refresh_inventory
-      run_once: true
-      delegate_to: localhost
-
   vars:
     ansible_port: "{{ ssh_port }}"
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
