@@ -32,6 +32,10 @@
         newly_created_servers: "{{ groups['newly_created_servers'] }}"
       delegate_to: localhost
       run_once: true
+    - name: Refresh inventory to ensure all hosts are available
+      ansible.builtin.meta: refresh_inventory
+      run_once: true
+      delegate_to: localhost
 
   vars:
     ansible_port: "{{ ssh_port }}"
@@ -49,11 +53,6 @@
     ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
     ansible_python_interpreter: auto_silent
   pre_tasks:
-    - name: Refresh inventory to ensure all hosts are available
-      ansible.builtin.meta: refresh_inventory
-      run_once: true
-      delegate_to: localhost
-
     - name: Show error if no hosts found in the target group.
       ansible.builtin.fail:
         msg: "No hosts found in the target group '{{ hostvars['localhost'].newly_created_servers | default([]) if hostvars['localhost'].newly_created_servers is defined else (target | default('all')) }}'. Check your inventory configuration."
