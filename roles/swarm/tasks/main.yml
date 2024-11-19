@@ -10,3 +10,10 @@
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml
+
+- name: Set CRON for Docker system prune.
+  ansible.builtin.cron:
+    name: "Prune unused Docker images, containers, and networks"
+    minute: "0"
+    hour: "4"
+    job: "/usr/bin/docker system prune --all --force"
