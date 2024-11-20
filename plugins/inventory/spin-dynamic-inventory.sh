@@ -17,9 +17,9 @@ def remove_null_hosts:
 def add_server_to_groups($server):
     if $server.address and $server.environment then
         if ($server.environment | endswith("_workers")) then
-            {("servers_" + $server.environment): {hosts: ((.["servers_" + $server.environment].hosts // []) + [$server.address])}}
+            {($server.environment): {hosts: ((.[$server.environment].hosts // []) + [$server.address])}}
         else
-            {("servers_" + $server.environment + "_managers"): {hosts: ((.["servers_" + $server.environment + "_managers"].hosts // []) + [$server.address])}}
+            {($server.environment + "_managers"): {hosts: ((.[$server.environment + "_managers"].hosts // []) + [$server.address])}}
         end
     else
         {}
@@ -42,20 +42,20 @@ def merge_vars($server):
 (.environments // [] | reduce .[] as $env (
     $initial_base;
     . * {
-        ("servers_" + $env.name + "_managers"): {hosts: []},
-        ("servers_" + $env.name + "_workers"): {hosts: []},
+        ($env.name + "_managers"): {hosts: []},
+        ($env.name + "_workers"): {hosts: []},
         ($env.name): {children: [
-            ("servers_" + $env.name + "_managers"),
-            ("servers_" + $env.name + "_workers")
+            ($env.name + "_managers"),
+            ($env.name + "_workers")
         ]},
         "all": {
             children: (.all.children + [$env.name])
         },
         "swarm_managers": {
-            children: ((.swarm_managers.children // []) + [("servers_" + $env.name + "_managers")])
+            children: ((.swarm_managers.children // []) + [($env.name + "_managers")])
         },
         "swarm_workers": {
-            children: ((.swarm_workers.children // []) + [("servers_" + $env.name + "_workers")])
+            children: ((.swarm_workers.children // []) + [($env.name + "_workers")])
         }
     }
 )) as $base |
@@ -110,7 +110,7 @@ remove_null_hosts |
 .ungrouped.hosts = (.all.hosts - (
     [
         (.environments // [] | .[].name | . as $env |
-            [(["servers_" + $env + "_managers", "servers_" + $env + "_workers"] | 
+            [([$env + "_managers", $env + "_workers"] | 
             map(.[].hosts // [])[])]
         )[]
     ] | flatten | unique
