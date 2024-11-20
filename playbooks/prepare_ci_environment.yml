@@ -14,6 +14,16 @@
         - always
         - get-host
 
+    - name: Validate inventory groups exist
+      ansible.builtin.fail:
+        msg: "Required inventory group '{{ spin_environment }}_managers' is empty or not defined"
+      when: >-
+        groups[spin_environment + '_managers'] is not defined or
+        groups[spin_environment + '_managers'] | length == 0
+      tags:
+        - always
+        - get-host
+
     - name: Set fact of full path to CI folder
       ansible.builtin.set_fact:
         spin_ci_folder_full_path: "{{ spin_ci_folder_full_path | default('/ansible/' + spin_ci_folder) }}"
