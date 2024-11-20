@@ -14,6 +14,17 @@
         - always
         - get-host
 
+    # Support for Spin v2 inventory names, add them to the new managers group
+    - name: Add hosts from manager_servers group to managers group if it exists
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: "{{ spin_environment }}_managers"
+      when: groups[spin_environment + '_manager_servers'] is defined
+      loop: "{{ groups[spin_environment + '_manager_servers'] | default([]) }}"
+      tags:
+        - always
+        - get-host
+
     - name: Validate inventory groups exist
       ansible.builtin.fail:
         msg: "Required inventory group '{{ spin_environment }}_managers' is empty or not defined. Verify your .spin.yml file or custom inventory file."
