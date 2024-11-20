@@ -9,12 +9,13 @@
       ansible.builtin.fail:
         msg: "You have an invalid configuration in your variables file (usually '.spin.yml'). Be sure providers, servers, and hardware_profiles are defined."
       when: >
-        providers is not defined or
+        (servers | selectattr('address', 'undefined') | list | length > 0) and
+        (providers is not defined or
         providers is none or
         (providers | default([]) | length == 0) or
         hardware_profiles is not defined or
         hardware_profiles is none or
-        (hardware_profiles | default([]) | length == 0)
+        (hardware_profiles | default([]) | length == 0))
 
     - name: Create servers
       ansible.builtin.include_role:
