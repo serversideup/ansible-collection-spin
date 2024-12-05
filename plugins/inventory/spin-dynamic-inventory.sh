@@ -2,14 +2,47 @@
 ANSIBLE_WORK_DIR="${ANSIBLE_WORK_DIR:-$(pwd)}"
 ANSIBLE_VARIABLE_FILE_NAME="${ANSIBLE_VARIABLE_FILE_NAME:-".spin.yml"}"
 ANSIBLE_VARIABLE_FILEPATH="${ANSIBLE_VARIABLE_FILEPATH:-"${ANSIBLE_WORK_DIR}/${ANSIBLE_VARIABLE_FILE_NAME}"}"
+ANSIBLE_VAULT_PASSWORD_FILE="${ANSIBLE_VAULT_PASSWORD_FILE:-"${ANSIBLE_WORK_DIR}/.vault-password"}"
+ANSIBLE_VAULT_ENCRYPTED=false
 
 ##############################################################
 # Functions
 ##############################################################
+is_vault_encrypted() {
+    local file="$1"
+    # If already determined that a file is encrypted, return true
+    if $ANSIBLE_VAULT_ENCRYPTED; then
+        return 0
+    fi
+
+    # Perform the check
+    if head -n1 "$file" | grep -q '^$ANSIBLE_VAULT;'; then
+        if [ -f "$ANSIBLE_VAULT_PASSWORD_FILE" ]; then
+            ANSIBLE_VAULT_ENCRYPTED=true
+            return 0
+        else
+            echo "[ERROR] Vault encrypted file found, but no vault password file found at $ANSIBLE_VAULT_PASSWORD_FILE"
+            exit 1
+        fi
+    else
+        return 1
+    fi
+}
+
+yq_eval() {
+    local query="$1"
+    local file="$2"
+    
+    if is_vault_encrypted "$file"; then
+        ansible-vault view --vault-password-file="$ANSIBLE_VAULT_PASSWORD_FILE" "$file" | yq eval "$query" -
+    else
+        yq eval "$query" "$file"
+    fi
+}
 
 generate_inventory() {
     validate_inventory
-    yq eval -o=json "$ANSIBLE_VARIABLE_FILEPATH" | jq '
+    yq_eval -o=json "$ANSIBLE_VARIABLE_FILEPATH" | jq '
 # Helper functions
 def remove_null_hosts:
     walk(if type == "object" and has("hosts") and (.hosts | all(. == null)) then del(.hosts) else . end);
@@ -152,10 +185,10 @@ validate_inventory() {
   file="$ANSIBLE_VARIABLE_FILEPATH"
   
   # Extract server addresses and names using the new path structure
-  addresses=$(yq eval '.servers[] | select(.address != null) | .address' "$file")
-  server_names=$(yq eval '.servers[] | select(.server_name != null) | .server_name' "$file")
-  environments=$(yq eval '.servers[] | select(.environment != null) | .environment' "$file")
-  hardware_profiles=$(yq eval '.servers[] | select(.hardware_profile != null) | .hardware_profile' "$file")
+  addresses=$(yq_eval '.servers[] | select(.address != null) | .address' "$file")
+  server_names=$(yq_eval '.servers[] | select(.server_name != null) | .server_name' "$file")
+  environments=$(yq_eval '.servers[] | select(.environment != null) | .environment' "$file")
+  hardware_profiles=$(yq_eval '.servers[] | select(.hardware_profile != null) | .hardware_profile' "$file")
   
   # Validate server addresses
   invalid_addresses=$(echo "$addresses" | while read -r address; do
@@ -187,7 +220,7 @@ validate_inventory() {
   fi
 
   # Validate environments against defined environments
-  defined_environments=$(yq eval '.environments[].name' "$file")
+  defined_environments=$(yq_eval '.environments[].name' "$file")
   # Create extended environment list with _workers and _managers variants
   extended_environments=$(echo "$defined_environments" | while read -r env; do
     echo "$env"
@@ -210,7 +243,7 @@ validate_inventory() {
   fi
 
   # Validate hardware profiles against defined profiles
-  defined_profiles=$(yq eval '.hardware_profiles[].name' "$file")
+  defined_profiles=$(yq_eval '.hardware_profiles[].name' "$file")
   invalid_profiles=$(echo "$hardware_profiles" | while read -r profile; do
     if ! echo "$defined_profiles" | grep -q "^${profile}$"; then
       echo "$profile"
@@ -235,17 +268,17 @@ validate_inventory() {
   # Check server names
   invalid_ansible_names=$(
     # Check environment names
-    yq eval '.environments[].name' "$file" | while read -r name; do
+    yq_eval '.environments[].name' "$file" | while read -r name; do
       validate_ansible_name "$name" "environment"
     done
 
     # Check hardware profile names
-    yq eval '.hardware_profiles[].name' "$file" | while read -r name; do
+    yq_eval '.hardware_profiles[].name' "$file" | while read -r name; do
       validate_ansible_name "$name" "hardware_profile"
     done
 
     # Check provider names
-    yq eval '.providers[].name' "$file" | while read -r name; do
+    yq_eval '.providers[].name' "$file" | while read -r name; do
       validate_ansible_name "$name" "provider"
     done
   )
