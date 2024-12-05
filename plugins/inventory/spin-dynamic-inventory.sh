@@ -18,8 +18,14 @@ is_vault_encrypted() {
     # Perform the check
     if head -n1 "$file" | grep -q '^$ANSIBLE_VAULT;'; then
         if [ -f "$ANSIBLE_VAULT_PASSWORD_FILE" ]; then
-            ANSIBLE_VAULT_ENCRYPTED=true
-            return 0
+            # Attempt to decrypt the file to validate the password
+            if ansible-vault view --vault-password-file="$ANSIBLE_VAULT_PASSWORD_FILE" "$file" >/dev/null 2>&1; then
+                ANSIBLE_VAULT_ENCRYPTED=true
+                return 0
+            else
+                echo "[ERROR] Invalid vault password provided for file $file"
+                exit 1
+            fi
         else
             echo "[ERROR] Vault encrypted file found, but no vault password file found at $ANSIBLE_VAULT_PASSWORD_FILE"
             exit 1
