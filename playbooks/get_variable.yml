@@ -1,0 +1,16 @@
+---
+- name: Get variable value
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display failure if variable_name is not set
+      ansible.builtin.fail:
+        msg: "variable_name is not set. Use -e variable_name=<name_of_variable>"
+      when: variable_name is not defined
+      run_once: true
+
+    - name: Output variable value
+      ansible.builtin.debug:
+        msg: "{{ lookup('vars', variable_name) }}"
+      when: variable_name in vars
+      run_once: true

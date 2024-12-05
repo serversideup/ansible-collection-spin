@@ -1,0 +1,117 @@
+---
+- name: Set Digital Ocean API token
+  ansible.builtin.set_fact:
+    do_api_token: "{{ provider_config.api_token | default(lookup('env', 'DO_API_TOKEN')) }}"
+  no_log: true
+
+- name: Get existing SSH keys from Digital Ocean
+  community.digitalocean.digital_ocean_sshkey_info:
+    oauth_token: "{{ do_api_token }}"
+  register: do_existing_ssh_keys
+
+- name: Create SSH keys for sudo users if they don't exist in Digital Ocean
+  community.digitalocean.digital_ocean_sshkey:
+    oauth_token: "{{ do_api_token }}"
+    name: "{{ item.0.username }}-{{ item.1.public_key | hash('md5') }}"
+    ssh_pub_key: "{{ item.1.public_key }}"
+    state: present
+  loop: "{{ sudo_users | subelements('authorized_keys') }}"
+  register: do_created_ssh_keys
+  when: >
+    item.1.public_key not in 
+    (do_existing_ssh_keys.data | map(attribute='public_key') | list)
+
+- name: Set SSH key IDs for server creation
+  ansible.builtin.set_fact:
+    sudo_user_do_ssh_key_fingerprints: >-
+      {{
+        (do_existing_ssh_keys.data | map(attribute='fingerprint') | list) +
+        (do_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='data.ssh_key.fingerprint') | list)
+      }}
+
+- name: Get existing firewall configuration
+  community.digitalocean.digital_ocean_firewall_info:
+    oauth_token: "{{ do_api_token }}"
+    name: "spin-web-firewall"
+  register: existing_firewall
+  ignore_errors: true  # In case firewall doesn't exist yet
+
+- name: Create Digital Ocean droplet
+  community.digitalocean.digital_ocean_droplet:
+    oauth_token: "{{ do_api_token }}"
+    name: "{{ server.server_name }}"
+    region: "{{ server.hardware_profile_config.region }}"
+    size: "{{ server.hardware_profile_config.size }}"
+    image: "{{ server.hardware_profile_config.image }}"
+    ssh_keys: "{{ sudo_user_do_ssh_key_fingerprints }}"
+    backups: "{{ server.backups | default(true) }}"
+  register: do_droplet
+  loop: "{{ provider_servers }}"
+  loop_control:
+    loop_var: server
+
+- name: Ensure firewall exists and is assigned to droplet
+  community.digitalocean.digital_ocean_firewall:
+    name: "spin-web-firewall"
+    oauth_token: "{{ do_api_token }}"
+    droplet_ids: >-
+      {{
+        (existing_firewall.data[0].droplet_ids | default([])) +
+        (do_droplet.results | map(attribute='data.droplet.id') | list)
+      }}
+    inbound_rules:
+      - protocol: icmp
+        ports: "1-65535"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "22"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "80"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "443"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: tcp
+        ports: "2222"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
+    outbound_rules:
+      - protocol: tcp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: udp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: icmp
+        ports: "1-65535"
+        destinations:
+          addresses: ["0.0.0.0/0", "::/0"]
+    state: present
+
+- name: Validate IP addresses for created servers
+  ansible.builtin.assert:
+    that:
+      - item.data.droplet.networks.v4 | length > 0 or item.data.droplet.networks.v6 | length > 0
+    fail_msg: "Server {{ item.data.droplet.name }} has no IP addresses assigned"
+    success_msg: "Server {{ item.data.droplet.name }} has valid IP configuration"
+  loop: "{{ do_droplet.results }}"
+  when: not item.skipped | default(false)
+
+- name: Set main IP address and add servers to in-memory inventory
+  ansible.builtin.add_host:
+    name: "{{ item.data.droplet.name }}"
+    ansible_host: >-
+      {{
+        item.data.droplet.networks.v4 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first |
+        default(item.data.droplet.networks.v6 | selectattr('type', 'eq', 'public') | map(attribute='ip_address') | first)
+      }}
+    groups: newly_created_servers
+  loop: "{{ do_droplet.results }}"
+  when: not item.skipped | default(false)

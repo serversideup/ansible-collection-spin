@@ -1,0 +1,46 @@
+---
+- name: Gather sudo users with their SSH keys
+  ansible.builtin.set_fact:
+    sudo_users: "{{ users | selectattr('groups', 'contains', 'sudo') | list }}"
+
+- name: Get unique providers from servers
+  ansible.builtin.set_fact:
+    unique_providers: "{{ hardware_profiles | 
+      selectattr('name', 'in', servers_missing_addresses | map(attribute='hardware_profile') | list) | map(attribute='provider') | list }}"
+
+- name: Include provider-specific tasks
+  ansible.builtin.include_tasks: "providers/{{ provider }}.yml"
+  loop: "{{ unique_providers }}"
+  loop_control:
+    loop_var: provider
+  vars:
+    provider_servers: >-
+      {%- set result = [] -%}
+      {%- for server in servers_missing_addresses -%}
+        {%- if server.hardware_profile in (hardware_profiles | selectattr('provider', 'equalto', provider) | map(attribute='name') | list) -%}
+          {%- set profile_config = (hardware_profiles | selectattr('name', 'equalto', server.hardware_profile) | first).profile_config -%}
+          {{- result.append(server | combine({'hardware_profile_config': profile_config})) -}}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- result -}}
+    provider_config: "{{ providers | selectattr('name', 'equalto', provider) | first }}"
+
+- name: Write newly created server addresses to .spin.yml
+  ansible.builtin.lineinfile:
+    path: "{{ lookup('env', 'PWD') }}/.spin.yml"
+    insertafter: "server_name: {{ item }}"
+    line: "    address: {{ hostvars[item].ansible_host }}"
+  loop: "{{ groups['newly_created_servers'] }}"
+
+- name: Store newly created servers in fact
+  ansible.builtin.set_fact:
+    newly_created_servers: >-
+          {{
+            groups['newly_created_servers'] | map('extract', hostvars) |
+            map(attribute='ansible_host') | list
+          }}
+  delegate_facts: true
+
+- name: Refresh inventory
+  ansible.builtin.meta: refresh_inventory
+  run_once: true

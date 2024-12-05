@@ -1,0 +1,148 @@
+---
+- name: Set Vultr API token
+  ansible.builtin.set_fact:
+    vultr_api_token: "{{ provider_config.api_token | default(lookup('env', 'VULTR_API_KEY')) }}"
+  no_log: true
+
+- name: Get existing SSH keys from Vultr
+  vultr.cloud.ssh_key_info:
+    api_key: "{{ vultr_api_token }}"
+  register: vultr_existing_ssh_keys
+
+- name: Create SSH keys for sudo users if they don't exist in Vultr
+  vultr.cloud.ssh_key:
+    api_key: "{{ vultr_api_token }}"
+    name: "{{ item.0.username }}-{{ item.1.public_key | hash('md5') }}"
+    ssh_key: "{{ item.1.public_key }}"
+    state: present
+  loop: "{{ sudo_users | subelements('authorized_keys') }}"
+  register: vultr_created_ssh_keys
+  when: >
+    item.1.public_key not in (vultr_existing_ssh_keys.vultr_ssh_key_info | map(attribute='ssh_key') | list)
+
+- name: Set SSH key names for server creation
+  ansible.builtin.set_fact:
+    sudo_user_vultr_ssh_key_names: >-
+      {{
+        (vultr_existing_ssh_keys.vultr_ssh_key_info | map(attribute='name') | list) +
+        (vultr_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='vultr_ssh_key.name') | list)
+      }}
+
+- name: Ensure firewall group is present.
+  vultr.cloud.firewall_group:
+    api_key: "{{ vultr_api_token }}"
+    description: "spin-web-firewall"
+
+- name: Ensure firewall rules are present
+  vultr.cloud.firewall_rule:
+    api_key: "{{ vultr_api_token }}"
+    group: "spin-web-firewall"
+    protocol: "{{ item.protocol }}"
+    port: "{{ item.port | default(omit) }}"
+    ip_type: "{{ item.ip_type }}"
+    subnet: "{{ item.subnet }}"
+    subnet_size: "{{ item.subnet_size }}"
+    notes: "{{ item.description }}"
+  loop:
+    # ICMP (IPv4)
+    - protocol: icmp
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow icmp from everywhere"
+    # ICMP (IPv6)
+    - protocol: icmp
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow icmp from everywhere"
+    # SSH (IPv4)
+    - protocol: tcp
+      port: "22"
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow ssh from everywhere"
+    # SSH (IPv6)
+    - protocol: tcp
+      port: "22"
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow ssh from everywhere"
+    # HTTP (IPv4)
+    - protocol: tcp
+      port: "80"
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow http from everywhere"
+    # HTTP (IPv6)
+    - protocol: tcp
+      port: "80"
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow http from everywhere"
+    # HTTPS (IPv4)
+    - protocol: tcp
+      port: "443"
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow https from everywhere"
+    # HTTPS (IPv6)
+    - protocol: tcp
+      port: "443"
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow https from everywhere"
+    # SSH Tunnel (IPv4)
+    - protocol: tcp
+      port: "2222"
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow ssh tunnel from everywhere"
+    # SSH Tunnel (IPv6)
+    - protocol: tcp
+      port: "2222"
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow ssh tunnel from everywhere"
+
+- name: Create Vultr server
+  vultr.cloud.instance:
+    api_key: "{{ vultr_api_token }}"
+    label: "{{ server.server_name }}"
+    region: "{{ server.hardware_profile_config.region }}"
+    plan: "{{ server.hardware_profile_config.plan }}"
+    os: "{{ server.hardware_profile_config.os }}"
+    backups: "{{ server.backups | default(true) }}"
+    ssh_keys: "{{ sudo_user_vultr_ssh_key_names }}"
+    firewall_group: "spin-web-firewall"
+    activation_email: "{{ server.hardware_profile_config.activation_email | default(true) }}"
+    tags: "{{ server.environment | default('') }}"
+  register: vultr_created_servers
+  loop: "{{ provider_servers }}"
+  loop_control:
+    loop_var: server
+
+- name: Validate IP addresses for created servers
+  ansible.builtin.assert:
+    that:
+      - item.vultr_instance.main_ip is defined
+    fail_msg: "Server {{ item.vultr_instance.label }} has no IP addresses assigned"
+    success_msg: "Server {{ item.vultr_instance.label }} has valid IP configuration"
+  loop: "{{ vultr_created_servers.results }}"
+  when: not item.failed
+
+- name: Set main IP address and add servers to in-memory inventory
+  ansible.builtin.add_host:
+    name: "{{ item.vultr_instance.label }}"
+    ansible_host: "{{ item.vultr_instance.main_ip }}"
+    groups: newly_created_servers
+  loop: "{{ vultr_created_servers.results }}"
+  when: not item.failed

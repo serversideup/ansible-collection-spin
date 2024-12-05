@@ -48,3 +48,10 @@ molecule converge # Runs the playbook
 molecule verify # Runs the tests
 molecule destroy # Destroys the container
 ```
+
+## Testing the collection
+Instead of committing to a brach and testing on another machine, it might be easier to just build the collection and install it locally. This will build and install the collection locally on your machine. Look at the file `dev.sh` to see how this is done.
+
+```bash
+bash dev.sh
+```
