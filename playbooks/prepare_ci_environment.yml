@@ -56,6 +56,9 @@
         content: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | join('\n') }}\n"
         dest: "{{ spin_ci_folder_full_path }}/AUTHORIZED_KEYS"
         mode: '0600'
+      tags:
+        - always
+        - get-authorized-keys
 
     - name: Run ssh-keyscan on manager hosts.
       ansible.builtin.shell: >-
