@@ -1,6 +1,6 @@
 ---
 - name: Validate inputs.
-  ansible.builtin.include_tasks: validate-inputs.yml
+  ansible.builtin.import_tasks: validate-inputs.yml
 
 - name: Set up Debian (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml

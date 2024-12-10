@@ -2,9 +2,18 @@
 - name: Install Docker (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_os_family == 'Debian'
+  tags: install-docker
 
 - name: Configure Docker User.
-  ansible.builtin.include_tasks: configure-docker-user.yml
+  ansible.builtin.include_role:
+    name: serversideup.spin.docker_user
 
 - name: Configure Docker Swarm Mode.
   ansible.builtin.include_tasks: configure-swarm.yml
+
+- name: Set CRON for Docker system prune.
+  ansible.builtin.cron:
+    name: "Prune unused Docker images, containers, and networks"
+    minute: "0"
+    hour: "4"
+    job: "/usr/bin/docker system prune --all --force"

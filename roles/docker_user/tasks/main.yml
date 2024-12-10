@@ -16,13 +16,20 @@
     system: no
     uid: "{{ docker_user.uid | default('9999') }}"
 
-- name: Set the authorized SSH keys for the Docker user.
+- name: Set the authorized SSH keys for the Docker user from the variable file.
   ansible.posix.authorized_key:
     user: "{{ docker_user.username }}"
     state: present
     key: "{{ item }}"
   with_items: "{{ docker_user.authorized_ssh_keys }}"
   when: docker_user.authorized_ssh_keys is defined
+
+- name: Set the authorized SSH keys for the Docker user from the "spin configure" command.
+  ansible.posix.authorized_key:
+    user: "{{ docker_user.username }}"
+    state: present
+    key: "{{ deploy_public_key }}"
+  when: deploy_public_key is defined
 
 - name: Add public keys of admin or sudo users to Docker user
   ansible.posix.authorized_key:
