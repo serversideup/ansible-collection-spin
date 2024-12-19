@@ -1,0 +1,104 @@
+---
+- name: Set Hetzner API token
+  ansible.builtin.set_fact:
+    hetzner_api_token: "{{ provider_config.api_token | default(lookup('env', 'HCLOUD_TOKEN')) }}"
+  no_log: true
+
+- name: Get existing SSH keys from Hetzner Cloud
+  hetzner.hcloud.ssh_key_info:
+    api_token: "{{ hetzner_api_token }}"
+  register: hetzner_existing_ssh_keys
+
+- name: Create SSH keys for sudo users if they don't exist in Hetzner Cloud
+  hetzner.hcloud.ssh_key:
+    api_token: "{{ hetzner_api_token }}"
+    name: "{{ item.0.username }}-{{ item.1.public_key | hash('md5') }}"
+    public_key: "{{ item.1.public_key }}"
+    state: present
+  loop: "{{ sudo_users | subelements('authorized_keys') }}"
+  register: hetzner_created_ssh_keys
+  when: >
+    item.1.public_key not in 
+    (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='public_key') | map('regex_replace', '"$', '') | list)
+
+- name: Set SSH key IDs for server creation
+  ansible.builtin.set_fact:
+    sudo_user_hetzner_ssh_key_ids: >-
+      {{
+        (hetzner_existing_ssh_keys.hcloud_ssh_key_info | map(attribute='id') | list) +
+        (hetzner_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='hcloud_ssh_key.id') | list)
+      }}
+
+- name: Ensure firewall exists.
+  hetzner.hcloud.firewall:
+    name: spin-web-firewall
+    api_token: "{{ hetzner_api_token }}"
+    rules:
+      - description: allow icmp from everywhere
+        direction: in
+        protocol: icmp
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow ssh from everywhere
+        direction: in
+        protocol: tcp
+        port: 22
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow http from everywhere
+        direction: in
+        protocol: tcp
+        port: 80
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow https from everywhere
+        direction: in
+        protocol: tcp
+        port: 443
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+      - description: allow ssh tunnel from everywhere
+        direction: in
+        protocol: tcp
+        port: 2222
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
+    state: present
+
+- name: Create Hetzner server
+  hetzner.hcloud.server:
+    name: "{{ server.server_name }}"
+    api_token: "{{ hetzner_api_token }}"
+    server_type: "{{ server.hardware_profile_config.server_type }}"
+    image: "{{ server.hardware_profile_config.image }}"
+    location: "{{ server.hardware_profile_config.location }}"
+    backups: "{{ server.backups | default(true) }}"
+    ssh_keys: "{{ sudo_user_hetzner_ssh_key_ids }}"
+    firewalls:
+      - spin-web-firewall
+  register: hetzner_created_servers
+  loop: "{{ provider_servers }}"
+  loop_control:
+    loop_var: server
+
+- name: Validate IP addresses for created servers
+  ansible.builtin.assert:
+    that:
+      - item.hcloud_server.ipv4_address is defined or item.hcloud_server.ipv6 is defined
+    fail_msg: "Server {{ item.hcloud_server.name }} has no IP addresses assigned"
+    success_msg: "Server {{ item.hcloud_server.name }} has valid IP configuration"
+  loop: "{{ hetzner_created_servers.results }}"
+  when: not item.failed
+
+- name: Set main IP address and add servers to in-memory inventory
+  ansible.builtin.add_host:
+    name: "{{ item.hcloud_server.name }}"
+    ansible_host: "{{ item.hcloud_server.ipv4_address or item.hcloud_server.ipv6 }}"
+    groups: newly_created_servers
+  loop: "{{ hetzner_created_servers.results }}"
+  when: not item.failed

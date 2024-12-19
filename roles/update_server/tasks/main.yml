@@ -1,0 +1,31 @@
+---
+- name: Ensure SSH connection is established (wait up to 5 minutes)
+  ansible.builtin.wait_for_connection:
+    timeout: 300
+
+- name: Update and upgrade all packages (this might take a while depending on your host and server's performance)
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+    autoclean: yes
+    lock_timeout: 600
+  become: true
+
+- name: Check if reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+  become: true
+
+- name: Reboot server if required
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  become: true
+  when: reboot_required.stat.exists
+  register: reboot_result
+
+- name: Wait for SSH connection after reboot (wait up to 5 minutes)
+  ansible.builtin.wait_for_connection:
+    timeout: 300
+  when: reboot_result.changed

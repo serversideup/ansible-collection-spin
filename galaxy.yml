@@ -17,6 +17,9 @@ dependencies:
   ansible.posix: '*'
   community.general: '*'
   community.docker: '*'
+  hetzner.hcloud: '*'
+  vultr.cloud: '*'
+  community.digitalocean: '*'
 repository: https://github.com/serversideup/ansible-collection-spin
 documentation: https://serversideup.net/open-source/spin/docs/
 homepage: https://serversideup.net/open-source/spin/

@@ -4,11 +4,18 @@
     dest: "/etc/ssh/sshd_config.d/{{ item }}"
     owner: root
     group: root
-    mode: 0644
+    mode: 0600
   notify: Restart ssh
   with_items: 
-    - spin-secure-ssh.conf
-    - spin-ssh-tunnels.conf
+    - 01-spin-secure-ssh.conf
+    - 02-spin-ssh-tunnels.conf
+
+- name: Ensure PermitRootLogin is removed from sshd_config
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    state: absent
+  notify: Restart ssh
 
 - name: Configure sudo access for sudo group
   ansible.builtin.lineinfile:

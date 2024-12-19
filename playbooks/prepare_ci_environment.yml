@@ -1,0 +1,93 @@
+---
+- name: Prepare CI environment.
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Display failure if required variables are not set.
+      ansible.builtin.fail:
+        msg: "{{ item }} variable is not set. Use -e {{ item }}=<env_value>"
+      when: item is not defined
+      loop:
+        - spin_environment
+        - spin_ci_folder
+      tags:
+        - always
+        - get-host
+
+    # Support for Spin v2 inventory names, add them to the new managers group
+    - name: Add hosts from manager_servers group to managers group if it exists
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: "{{ spin_environment }}_managers"
+      when: groups[spin_environment + '_manager_servers'] is defined
+      loop: "{{ groups[spin_environment + '_manager_servers'] | default([]) }}"
+      tags:
+        - always
+        - get-host
+
+    - name: Validate inventory groups exist
+      ansible.builtin.fail:
+        msg: "Required inventory group '{{ spin_environment }}_managers' is empty or not defined. Verify your .spin.yml file or custom inventory file."
+      when: >-
+        groups[spin_environment + '_managers'] is not defined or
+        groups[spin_environment + '_managers'] | length == 0
+      tags:
+        - always
+        - get-host
+
+    - name: Set fact of full path to CI folder
+      ansible.builtin.set_fact:
+        spin_ci_folder_full_path: "{{ spin_ci_folder_full_path | default('/ansible/' + spin_ci_folder) }}"
+      tags:
+        - always
+        - get-host
+
+    - name: Set {{ spin_environment | upper }}_SSH_REMOTE_HOSTNAME with first manager host
+      ansible.builtin.copy:
+        content: "{{ groups[spin_environment + '_managers'][0] }}"
+        dest: "{{ spin_ci_folder_full_path }}/{{ spin_environment | upper }}_SSH_REMOTE_HOSTNAME"
+      when: groups[spin_environment + '_managers'] is defined and groups[spin_environment + '_managers'] | length > 0
+      tags:
+        - always
+        - get-host
+
+    - name: Set AUTHORIZED_KEYS file with sudo users' SSH keys
+      ansible.builtin.copy:
+        content: "{{ users | selectattr('groups', 'contains', 'sudo') | map(attribute='authorized_keys') | flatten | map(attribute='public_key') | join('\n') }}\n"
+        dest: "{{ spin_ci_folder_full_path }}/AUTHORIZED_KEYS"
+        mode: '0600'
+      tags:
+        - always
+        - get-authorized-keys
+
+    - name: Run ssh-keyscan on manager hosts.
+      ansible.builtin.shell: >-
+        ssh-keyscan -p {{ ssh_port }} {{ groups[spin_environment + '_managers'] | join(' ') }} | sort
+      register: keyscan_result
+      when: groups[spin_environment + '_managers'] is defined and groups[spin_environment + '_managers'] | length > 0
+      changed_when: false
+
+    - name: Write SSH_REMOTE_KNOWN_HOSTS file
+      ansible.builtin.copy:
+        content: "{{ keyscan_result.stdout }}\n"
+        dest: "{{ spin_ci_folder_full_path }}/SSH_REMOTE_KNOWN_HOSTS"
+        mode: '0600'
+      when: keyscan_result.stdout is defined
+
+
+- name: Update deploy user authorized keys.
+  hosts: "{{ target | default('all') }}"
+  remote_user: "{{ spin_remote_user | default('root') }}"
+  gather_facts: false
+  become: true
+  vars:
+    ansible_port: "{{ ssh_port }}"
+    ansible_ssh_common_args: "-o IgnoreUnknown=UseKeychain -o StrictHostKeyChecking=accept-new"
+    ansible_python_interpreter: auto_silent
+  pre_tasks:
+    - name: Display failure if deploy_public_key is not set.
+      ansible.builtin.fail:
+        msg: "deploy_public_key variable is not set. Use -e deploy_public_key=<key_value>"
+      when: deploy_public_key is not defined
+  roles:
+    - role: serversideup.spin.docker_user

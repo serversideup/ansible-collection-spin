@@ -1,0 +1,4 @@
+*.tar.gz
+test/results
+.spin.yml
+.vault-password
