@@ -116,6 +116,7 @@ postfix_hostname: "{{ inventory_hostname }}"
 ## Deploy user customization - You can customize the deploy user below if you'd like
 # docker_user:
 #   username: deploy
+#   home: /opt/deploy
 #   authorized_ssh_keys: 
 #     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKNJGtd7a4DBHsQi7HGrC5xz0eAEFHZ3Ogh3FEFI2345 fake@key"
 #     - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
