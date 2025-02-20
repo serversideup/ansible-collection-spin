@@ -50,6 +50,6 @@ docker_user:
   authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dockeruser"
 
-pip_packages:
-  - jsondiff
-  - pyyaml
+common_additional_packages:
+  - python3-jsondiff
+  - python3-yaml

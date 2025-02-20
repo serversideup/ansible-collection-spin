@@ -26,7 +26,7 @@ postfix_hostname: "{{ inventory_hostname }}"
 # Install Packages Configuration
 ###########################################
 
-# Common packages to install
+# Base packages that will always be installed
 common_installed_packages:
   - cron
   - curl
@@ -46,6 +46,9 @@ common_installed_packages:
   - unzip
   - wget
   - zip
+
+# Additional packages that users can define
+common_additional_packages: []
 
 # PIP - Python Packages (examples below if you need them)
 

@@ -1,11 +1,11 @@
 ---
 - name: Install latest versions of common packages.
   ansible.builtin.apt:
-    name: "{{ common_installed_packages }}"
+    name: "{{ common_installed_packages + common_additional_packages }}"
     state: latest
     update_cache: yes
 
-- name: Install Python packages (if defined).
+- name: Install Python PIP packages (if defined).
   ansible.builtin.pip:
     name: "{{ pip_packages }}"
     state: latest
