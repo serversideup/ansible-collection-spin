@@ -34,7 +34,7 @@ postfix_hostname: "{{ inventory_hostname }}"
 # postfix_relayhost_password: "mysupersecretpassword"
 
 ###########################################
-# APT Configuration
+# Install Packages Configuration
 ###########################################
 
 # Common packages to install
@@ -57,6 +57,12 @@ common_installed_packages:
   - unzip
   - wget
   - zip
+
+# PIP - Python Packages (examples below if you need them)
+
+# pip_packages:
+#   - jsondiff
+#   - pyyaml
 
 # APT - Automatic Update Configuration
 apt_periodic_update_package_lists: "1"

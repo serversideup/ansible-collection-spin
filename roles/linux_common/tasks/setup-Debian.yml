@@ -5,6 +5,12 @@
     state: latest
     update_cache: yes
 
+- name: Install Python packages (if defined).
+  ansible.builtin.pip:
+    name: "{{ pip_packages }}"
+    state: latest
+  when: pip_packages is defined
+
 # Related GitHub issue: https://github.com/geerlingguy/docker-ubuntu2404-ansible/issues/2
 - name: Ensure Python system warning is removed.
   ansible.builtin.file:
