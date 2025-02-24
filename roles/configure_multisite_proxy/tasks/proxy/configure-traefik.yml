@@ -1,0 +1,31 @@
+---
+- name: Generate Traefik config content
+  ansible.builtin.set_fact:
+    traefik_config_content: "{{ lookup('template', '../templates/traefik.yml.j2') | from_yaml | to_yaml }}"
+  run_once: true
+  delegate_to: "{{ groups['docker_swarm_managers'][0] }}"
+
+- name: Calculate config MD5
+  ansible.builtin.set_fact:
+    traefik_config_md5: "{{ traefik_config_content | hash('md5') }}"
+  run_once: true
+  delegate_to: "{{ groups['docker_swarm_managers'][0] }}"
+
+- name: Create Traefik config
+  community.docker.docker_config:
+    name: "traefik-{{ traefik_config_md5 }}.yml"
+    data: "{{ traefik_config_content }}"
+    state: present
+  register: traefik_config
+  run_once: true
+  delegate_to: "{{ groups['docker_swarm_managers'][0] }}"
+
+- name: Deploy Traefik proxy stack
+  community.docker.docker_stack:
+    name: "spin-proxy"
+    state: present
+    detach: false
+    prune: true
+    compose: "{{ lookup('template', '../templates/traefik-compose.yml.j2') | from_yaml }}"
+  run_once: true
+  delegate_to: "{{ groups['docker_swarm_managers'][0] }}"

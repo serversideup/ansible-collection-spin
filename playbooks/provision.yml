@@ -59,3 +59,5 @@
   roles:
     - serversideup.spin.linux_common
     - serversideup.spin.swarm
+    - role: serversideup.spin.configure_multisite_proxy
+      when: multisite_proxy is defined and multisite_proxy is not none

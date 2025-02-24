@@ -1,0 +1,16 @@
+---
+- name: Validate multisite_proxy setting
+  ansible.builtin.fail:
+    msg: "multisite_proxy must be set to either 'cloudflare-tunnels' or 'traefik'"
+  when: multisite_proxy not in ['cloudflare-tunnels', 'traefik']
+  run_once: true
+  delegate_to: localhost
+  connection: local
+
+- name: Ensure the "web-public" Docker network exists
+  community.docker.docker_network:
+    name: "web-public"
+    state: present
+
+- name: Include proxy-specific tasks
+  ansible.builtin.include_tasks: "proxy/configure-{{ multisite_proxy }}.yml"
