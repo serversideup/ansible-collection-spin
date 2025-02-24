@@ -50,6 +50,7 @@ common_installed_packages:
   - ncdu
   - ntp
   - python3-minimal
+  - python3-pip
   - ssh
   - tzdata
   - ufw
