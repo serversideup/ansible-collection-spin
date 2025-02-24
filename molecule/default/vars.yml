@@ -49,3 +49,7 @@ docker_user:
   username: dockeruser
   authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu dockeruser"
+
+common_additional_packages:
+  - python3-jsondiff
+  - python3-yaml

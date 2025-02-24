@@ -1,9 +1,15 @@
 ---
 - name: Install latest versions of common packages.
   ansible.builtin.apt:
-    name: "{{ common_installed_packages }}"
+    name: "{{ common_installed_packages + common_additional_packages }}"
     state: latest
     update_cache: yes
+
+- name: Install Python PIP packages (if defined).
+  ansible.builtin.pip:
+    name: "{{ pip_packages }}"
+    state: latest
+  when: pip_packages is defined
 
 # Related GitHub issue: https://github.com/geerlingguy/docker-ubuntu2404-ansible/issues/2
 - name: Ensure Python system warning is removed.
