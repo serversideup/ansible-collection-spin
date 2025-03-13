@@ -62,9 +62,9 @@
 
     - name: Run ssh-keyscan on manager hosts.
       ansible.builtin.shell: >-
-        ssh-keyscan -p {{ ssh_port }} {{ groups[spin_environment + '_managers'] | join(' ') }} | sort
+        ssh-keyscan -p {{ ssh_port }} {{ groups['swarm_managers'] | join(' ') }} | sort
       register: keyscan_result
-      when: groups[spin_environment + '_managers'] is defined and groups[spin_environment + '_managers'] | length > 0
+      when: groups['swarm_managers'] is defined and groups['swarm_managers'] | length > 0
       changed_when: false
 
     - name: Write SSH_REMOTE_KNOWN_HOSTS file
