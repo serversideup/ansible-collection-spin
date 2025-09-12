@@ -3,20 +3,20 @@
 ##############################################################
 
 users:
-  # - username: alice
-  #   name: Alice Smith
-  #   groups: ['sudo']
-  #   authorized_keys:
-  #     - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
+#  - username: alice
+#    name: Alice Smith
+#    groups: ['sudo']
+#    authorized_keys:
+#      - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
 
-  # - username: bob
-  #   name: Bob Smith
-  #   state: present
-  #   password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
-  #   groups: ['sudo']
-  #   shell: "/bin/bash"
-  #   authorized_keys:
-  #     - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
+#  - username: bob
+#    name: Bob Smith
+#    state: present
+#    password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+#    groups: ['sudo']
+#    shell: "/bin/bash"
+#    authorized_keys:
+#      - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
 
 ##############################################################
 # 👇 Providers - You must set at least one provider
@@ -37,13 +37,13 @@ providers:
 ##############################################################
 
 servers:
-  # - server_name: ubuntu-2gb-ash-1
-  #   environment: production
-  #   hardware_profile: hetzner_2c_2gb_ubuntu2404
+#  - server_name: ubuntu-2gb-ash-1
+#    environment: production
+#    hardware_profile: hetzner_2c_2gb_ubuntu2404
 
-  # - server_name: ubuntu-1gb-ord-2
-  #   environment: staging
-  #   hardware_profile: vultr_1c_1gb_ubuntu2404
+#  - server_name: ubuntu-1gb-ord-2
+#    environment: staging
+#    hardware_profile: vultr_1c_1gb_ubuntu2404
 
 ##############################################################
 # 🤖 Hardware Profiles
