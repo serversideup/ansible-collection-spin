@@ -98,6 +98,20 @@
       subnet: "::"
       subnet_size: 0
       description: "allow https from everywhere"
+    # HTTPS (IPv4)
+    - protocol: udp
+      port: "443"
+      ip_type: v4
+      subnet: "0.0.0.0"
+      subnet_size: 0
+      description: "allow https from everywhere"
+    # HTTPS (IPv6)
+    - protocol: udp
+      port: "443"
+      ip_type: v6
+      subnet: "::"
+      subnet_size: 0
+      description: "allow https from everywhere"
     # SSH Tunnel (IPv4)
     - protocol: tcp
       port: "2222"
