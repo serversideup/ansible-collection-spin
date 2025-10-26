@@ -6,7 +6,7 @@ Linux Common
 Requirements
 ------------
 
-For now, this project focuses on supporting **Ubuntu 22.04** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
+For now, this project focuses on supporting **Ubuntu 22.04 and 24,04** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
 
 Role Variables
 --------------
