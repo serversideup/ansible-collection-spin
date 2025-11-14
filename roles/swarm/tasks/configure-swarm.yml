@@ -7,11 +7,12 @@
 - name: Open HTTP and HTTPS ports (if enabled)
   community.general.ufw:
     rule: allow
-    port: "{{ item }}"
-    proto: "tcp"
-    comment: "Allow HTTP connections."
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
+    comment: "Allow HTTP/HTTPS connections."
   loop:
-    - "80"
-    - "443"
+    - { port: "80", proto: "tcp" }
+    - { port: "443", proto: "tcp" }
+    - { port: "443", proto: "udp" }
   when: automatically_open_http_and_https_ports | bool
   notify: Enable ufw
