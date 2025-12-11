@@ -16,4 +16,5 @@
     name: "Prune unused Docker images, containers, and networks"
     minute: "0"
     hour: "4"
-    job: "/usr/bin/docker system prune --all --force"
+    # To view the logs, run: sudo journalctl -t docker-prune --since "7 days ago"
+    job: "/usr/bin/docker system prune --all --force 2>&1 | logger -t docker-prune"
