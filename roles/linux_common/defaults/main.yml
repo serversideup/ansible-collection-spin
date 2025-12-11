@@ -63,6 +63,10 @@ apt_periodic_download_upgradeable_packages: "1"
 apt_periodic_autoclean_interval: "7"
 apt_periodic_unattended_upgrade: "1"
 
+# Unattended Upgrades - Email Notifications
+# Options: "always", "only-on-error", "on-change"
+unattended_upgrade_mail_report: "only-on-error"
+
 ###########################################
 # Fun Terminal Customizations
 ###########################################
