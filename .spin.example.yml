@@ -23,14 +23,14 @@ users:
 ##############################################################
 
 providers:
-#   - name: digitalocean
-#     api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
+  # - name: digitalocean
+  #   api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
 
-#   - name: hetzner
-#     api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
+  # - name: hetzner
+  #   api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
 
-#   - name: vultr
-#     api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
+  # - name: vultr
+  #   api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
 
 ##############################################################
 # 👇 Servers - You must set at least one server
