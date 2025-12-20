@@ -4,7 +4,6 @@
     msg: >-
       ⚠️ The 'serversideup.spin.swarm' role is deprecated and will be removed in a future release.
       Please use 'serversideup.spin.docker' instead.
-  changed_when: true
 
 - name: Include the docker role
   ansible.builtin.include_role:
