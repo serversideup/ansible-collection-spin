@@ -58,4 +58,4 @@
 
   roles:
     - serversideup.spin.linux_common
-    - serversideup.spin.swarm
+    - serversideup.spin.docker
