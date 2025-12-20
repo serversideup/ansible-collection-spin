@@ -1,10 +1,10 @@
-# Docker Swarm Ansible Role
+# Docker Ansible Role
 
-Deploy and maintain Docker Swarm servers easily. This role was inspired by [Jeff Geerling](https://github.com/geerlingguy), but expanded to support Docker Swarm. Please support his amazing work!
+Deploy and maintain Docker servers easily. This role was inspired by [Jeff Geerling](https://github.com/geerlingguy), but expanded to support Docker Swarm. Please support his amazing work!
 
 ## Requirements
 
-For now, this project focuses on supporting **Ubuntu 22.04** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
+For now, this project focuses on supporting **Ubuntu 22.04+** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
 
 ## Role Variables
 
@@ -52,8 +52,8 @@ ansible-galaxy install -r requirements.yml
 ```yml
     - hosts: servers
       roles:
-         - role: serversideup.spin.docker_swarm
+         - role: serversideup.spin.docker
 ```
 
-## Adding a Swarm Manager
+## Adding a Docker Swarm Manager
 In order to create a new swarm, you must have a group in your inventory called `swarm_managers`. This group should contain all of the hosts that you want to be managers. You can have as many managers as you want, but you must have at least one.
