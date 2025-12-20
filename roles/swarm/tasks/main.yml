@@ -1,10 +1,10 @@
 ---
 - name: "DEPRECATION WARNING: serversideup.spin.swarm is deprecated"
-  ansible.builtin.fail:
+  ansible.builtin.debug:
     msg: >-
-      The 'serversideup.spin.swarm' role is deprecated and will be removed in a future release.
+      ⚠️ The 'serversideup.spin.swarm' role is deprecated and will be removed in a future release.
       Please use 'serversideup.spin.docker' instead.
-  ignore_errors: true
+  changed_when: true
 
 - name: Include the docker role
   ansible.builtin.include_role:
