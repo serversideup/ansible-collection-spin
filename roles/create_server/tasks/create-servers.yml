@@ -26,11 +26,32 @@
     provider_config: "{{ providers | selectattr('name', 'equalto', provider) | first }}"
 
 - name: Write newly created server addresses to .spin.yml
-  ansible.builtin.lineinfile:
-    path: "{{ lookup('env', 'PWD') }}/.spin.yml"
-    insertafter: "server_name: {{ item }}"
-    line: "    address: {{ hostvars[item].ansible_host }}"
+  ansible.builtin.shell: |
+    set -e
+    SPIN_FILE="{{ lookup('env', 'PWD') }}/.spin.yml"
+    VAULT_PASS_FILE="{{ lookup('env', 'PWD') }}/.vault-password"
+    SERVER_NAME="{{ item }}"
+    SERVER_ADDRESS="{{ hostvars[item].ansible_host }}"
+    
+    # Check if vault encrypted
+    if head -n1 "$SPIN_FILE" | grep -q '^\$ANSIBLE_VAULT;'; then
+      if [ -f "$VAULT_PASS_FILE" ]; then
+        # Decrypt, modify, re-encrypt
+        ansible-vault view --vault-password-file="$VAULT_PASS_FILE" "$SPIN_FILE" | \
+          yq eval "(.servers[] | select(.server_name == \"$SERVER_NAME\")).address = \"$SERVER_ADDRESS\"" - | \
+          ansible-vault encrypt --vault-password-file="$VAULT_PASS_FILE" --output="$SPIN_FILE" -
+      else
+        echo "Vault encrypted file found but no password file at $VAULT_PASS_FILE"
+        exit 1
+      fi
+    else
+      # Direct modification for unencrypted files
+      yq eval -i "(.servers[] | select(.server_name == \"$SERVER_NAME\")).address = \"$SERVER_ADDRESS\"" "$SPIN_FILE"
+    fi
+  args:
+    executable: /bin/sh
   loop: "{{ groups['newly_created_servers'] }}"
+  delegate_to: localhost
 
 - name: Store newly created servers in fact
   ansible.builtin.set_fact:
