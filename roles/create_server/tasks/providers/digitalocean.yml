@@ -76,6 +76,10 @@
         ports: "443"
         sources:
           addresses: ["0.0.0.0/0", "::/0"]
+      - protocol: udp
+        ports: "443"
+        sources:
+          addresses: ["0.0.0.0/0", "::/0"]
       - protocol: tcp
         ports: "2222"
         sources:

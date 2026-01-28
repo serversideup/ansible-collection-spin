@@ -61,6 +61,13 @@
         source_ips:
           - 0.0.0.0/0
           - ::/0
+      - description: allow https udp from everywhere
+        direction: in
+        protocol: udp
+        port: 443
+        source_ips:
+          - 0.0.0.0/0
+          - ::/0
       - description: allow ssh tunnel from everywhere
         direction: in
         protocol: tcp
