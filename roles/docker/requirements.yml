@@ -1,0 +1,7 @@
+---
+collections:
+  - name: community.docker
+  - name: community.general
+
+roles:
+  - name: serversideup.spin.docker_user

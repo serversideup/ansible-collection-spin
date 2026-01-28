@@ -23,27 +23,27 @@ users:
 ##############################################################
 
 providers:
-#   - name: digitalocean
-#     api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
+  # - name: digitalocean
+  #   api_token: Set token here OR delete this line and set environment variable DO_API_TOKEN
 
-#   - name: hetzner
-#     api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
+  # - name: hetzner
+  #   api_token: Set token here OR delete this line and set environment variable HCLOUD_TOKEN
 
-#   - name: vultr
-#     api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
+  # - name: vultr
+  #   api_token: Set token here OR delete this line and set environment variable VULTR_API_KEY
 
 ##############################################################
 # 👇 Servers - You must set at least one server
 ##############################################################
 
 servers:
-#  - server_name: ubuntu-2gb-ash-1
-#    environment: production
-#    hardware_profile: hetzner_2c_2gb_ubuntu2404
+  # - server_name: ubuntu-2gb-ash-1
+  #   environment: production
+  #   hardware_profile: hetzner_2c_2gb_ubuntu2404
 
-#  - server_name: ubuntu-1gb-ord-2
-#    environment: staging
-#    hardware_profile: vultr_1c_1gb_ubuntu2404
+  # - server_name: ubuntu-1gb-ord-2
+  #   environment: staging
+  #   hardware_profile: vultr_1c_1gb_ubuntu2404
 
 ##############################################################
 # 🤖 Hardware Profiles
@@ -103,9 +103,6 @@ ssh_port: "22"
 ## generate an encrypted hash with `spin mkpasswd`. Learn more:
 ## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
 use_passwordless_sudo: true
-
-## Email Notifications
-postfix_hostname: "{{ inventory_hostname }}"
 
 ## Set variables below to enable external SMTP relay
 # postfix_relayhost: "smtp.example.com"

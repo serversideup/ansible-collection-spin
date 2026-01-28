@@ -2,6 +2,12 @@ server_timezone: "America/Chicago"
 server_contact: "otheremail@example.com"
 use_passwordless_sudo: false
 
+# Postfix SMTP Relay Configuration (for testing)
+postfix_relayhost: "smtp.example.com"
+postfix_relayhost_port: "587"
+postfix_relayhost_username: "testuser"
+postfix_relayhost_password: "testpassword"
+
 users:
   - username: alice
     name: Alice Smith

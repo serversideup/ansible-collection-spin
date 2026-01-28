@@ -1,12 +1,12 @@
 ---
 - name: Set users variable when there are NOT any additional users.
   ansible.builtin.set_fact:
-    flattend_users: "{{ users }}"
+    flattened_users: "{{ users }}"
   when: additional_users is not defined
 
 - name: Set users variable when there ARE additional users.
   ansible.builtin.set_fact:
-    flattend_users: "{{ users + additional_users }}"
+    flattened_users: "{{ users + additional_users }}"
   when: additional_users is defined
 
 - name: Configure users.
@@ -20,7 +20,7 @@
     state: '{{ item.state | default("present") }}'
     uid: '{{ item.uid | default(omit) }}'
     update_password: '{{ item.update_password | default("on_create") }}'
-  with_items: "{{ flattend_users }}"
+  with_items: "{{ flattened_users }}"
   register: created_users
 
 - name: Force password change on next login.
@@ -37,7 +37,7 @@
     key: '{{item.1.public_key}}'
     state: '{{item.1.state | default ("present")}}'
   with_subelements:
-    - "{{ flattend_users }}"
+    - "{{ flattened_users }}"
     - authorized_keys
     - skip_missing: true
   when: item.0.state | default("present") != 'absent'

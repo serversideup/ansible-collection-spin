@@ -13,10 +13,8 @@ ssh_allow_tcp_forwarding: "yes"
 ssh_gateway_ports: "yes"
 
 
-## Email Notifications
-postfix_hostname: "{{ inventory_hostname }}"
-
-## Set variables below to enable external SMTP relay
+## External SMTP Relay (Optional)
+## Uncomment and configure to relay mail through an external provider
 # postfix_relayhost: "smtp.example.com"
 # postfix_relayhost_port: "587"
 # postfix_relayhost_username: "myusername"
@@ -62,6 +60,10 @@ apt_periodic_update_package_lists: "1"
 apt_periodic_download_upgradeable_packages: "1"
 apt_periodic_autoclean_interval: "7"
 apt_periodic_unattended_upgrade: "1"
+
+# Unattended Upgrades - Email Notifications
+# Options: "always", "only-on-error", "on-change"
+unattended_upgrade_mail_report: "only-on-error"
 
 ###########################################
 # Fun Terminal Customizations
