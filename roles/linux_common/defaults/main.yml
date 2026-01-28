@@ -13,10 +13,8 @@ ssh_allow_tcp_forwarding: "yes"
 ssh_gateway_ports: "yes"
 
 
-## Email Notifications
-postfix_hostname: "{{ inventory_hostname }}"
-
-## Set variables below to enable external SMTP relay
+## External SMTP Relay (Optional)
+## Uncomment and configure to relay mail through an external provider
 # postfix_relayhost: "smtp.example.com"
 # postfix_relayhost_port: "587"
 # postfix_relayhost_username: "myusername"

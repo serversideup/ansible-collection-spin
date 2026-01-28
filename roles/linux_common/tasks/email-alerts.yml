@@ -1,55 +1,88 @@
 ---
-- name: Disable Postfix port listening.
+###########################################
+# Postfix Security Hardening
+###########################################
+
+- name: Configure Postfix to only listen on localhost.
   ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    regexp: ^inet_interfaces
+    path: /etc/postfix/main.cf
+    regexp: '^inet_interfaces\s*='
     line: "inet_interfaces = loopback-only"
-    state: present
-    backrefs: yes
   notify: Restart postfix
 
-- name: Configure Postfix hostname.
+- name: Disable incoming SMTP in master.cf.
   ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    regexp: ^myhostname
-    line: "myhostname = {{ postfix_hostname }}"
-    state: present
-    backrefs: yes
-  notify: Restart postfix
-  when: not postfix_hostname is match("^\d{1,3}(\.\d{1,3}){3}$") # If not an IP address.
-
-- name: Prevent Postfix from listening on ports.
-  ansible.builtin.lineinfile:
-    dest: /etc/postfix/master.cf
-    regexp: ^smtp      inet
-    line: "#smtp      inet"
-    state: present
-    backrefs: yes
+    path: /etc/postfix/master.cf
+    regexp: '^(smtp\s+inet)'
+    line: '#\1'
+    backrefs: true
   notify: Restart postfix
 
-- name: Configure Postfix relayhost (if set).
-  ansible.builtin.lineinfile:
-    dest: /etc/postfix/main.cf
-    regexp: ^relayhost
-    line: "relayhost = [{{ postfix_relayhost }}]:{{ postfix_relayhost_port }}"
-    state: present
-    backrefs: yes
-  notify: Restart postfix
+###########################################
+# SMTP Relay Configuration (Optional)
+###########################################
+
+- name: Configure SMTP relay.
   when: postfix_relayhost is defined
+  block:
+    - name: Install SASL authentication package.
+      ansible.builtin.apt:
+        name: libsasl2-modules
+        cache_valid_time: 14400
+        state: present
 
-- name: Set Postfix Sasl password (if set).
-  ansible.builtin.lineinfile:
-    dest: /etc/postfix/sasl_passwd
-    regexp: ^\[{{ postfix_relayhost }}\]:{{ postfix_relayhost_port }}
-    line: "[{{ postfix_relayhost }}]:{{ postfix_relayhost_port }} {{ postfix_relayhost_username }}:{{ postfix_relayhost_password }}"
-    state: present
-    backrefs: yes
-  notify: Create postmap hash
-  when: postfix_relayhost is defined
+    - name: Configure Postfix SMTP relay settings.
+      ansible.builtin.lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - regexp: '^relayhost\s*='
+          line: "relayhost = [{{ postfix_relayhost }}]:{{ postfix_relayhost_port }}"
+        - regexp: '^smtp_sasl_auth_enable\s*='
+          line: "smtp_sasl_auth_enable = yes"
+        - regexp: '^smtp_sasl_security_options\s*='
+          line: "smtp_sasl_security_options = noanonymous"
+        - regexp: '^smtp_sasl_password_maps\s*='
+          line: "smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd"
+        - regexp: '^smtp_tls_security_level\s*='
+          line: "smtp_tls_security_level = encrypt"
+        - regexp: '^smtp_tls_CAfile\s*='
+          line: "smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt"
+      loop_control:
+        label: "{{ item.regexp }}"
+      notify: Restart postfix
 
-- name: Set Postfix aliases for root user email notifications.
+    - name: Configure TLS wrappermode for implicit TLS (port 465).
+      ansible.builtin.lineinfile:
+        path: /etc/postfix/main.cf
+        regexp: '^smtp_tls_wrappermode\s*='
+        line: "smtp_tls_wrappermode = yes"
+        state: "{{ 'present' if postfix_relayhost_port == '465' else 'absent' }}"
+      notify: Restart postfix
+
+    - name: Create SASL password file.
+      ansible.builtin.lineinfile:
+        path: /etc/postfix/sasl_passwd
+        regexp: '^\[{{ postfix_relayhost }}\]:{{ postfix_relayhost_port }}'
+        line: "[{{ postfix_relayhost }}]:{{ postfix_relayhost_port }} {{ postfix_relayhost_username }}:{{ postfix_relayhost_password }}"
+        create: true
+        owner: root
+        group: root
+        mode: "0600"
+      notify: Create postmap hash
+      no_log: true
+      when:
+        - postfix_relayhost_username is defined
+        - postfix_relayhost_password is defined
+
+###########################################
+# System Email Notifications
+###########################################
+
+- name: Forward root mail to server contact.
   ansible.builtin.lineinfile:
-    dest: /etc/aliases
-    regexp: "^root:"
+    path: /etc/aliases
+    regexp: '^root:'
     line: "root: {{ server_contact }}"
   notify: Run newaliases
