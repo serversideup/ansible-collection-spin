@@ -1,5 +1,10 @@
 ---
 ###########################################
+# Validation Configuration
+###########################################
+skip_os_version_validation: false
+
+###########################################
 # Basic Server Configuration
 ###########################################
 server_timezone: "Etc/UTC"

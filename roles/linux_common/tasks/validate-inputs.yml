@@ -1,5 +1,22 @@
 ---
 
+- name: Validate supported operating system version.
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Ubuntu"
+      - ansible_distribution_version in supported_ubuntu_versions
+    fail_msg: >-
+      Unsupported operating system: {{ ansible_distribution }} {{ ansible_distribution_version }}.
+      This collection only supports Ubuntu LTS versions: {{ supported_ubuntu_versions | join(', ') }}.
+      Interim releases (xx.10, xx.04 non-LTS) have shorter support cycles and may cause issues.
+      Set 'skip_os_version_check: true' to bypass this check at your own risk.
+    success_msg: "Operating system validated: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+  vars:
+    supported_ubuntu_versions:
+      - "22.04"
+      - "24.04"
+  when: not skip_os_version_validation | default(false)
+
 - name: Show error if no users are set.
   ansible.builtin.fail:
     msg: "No users are set. You must set at least one user under 'users' or 'additional_users' in '.spin.yml'."
