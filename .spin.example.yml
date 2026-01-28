@@ -104,9 +104,6 @@ ssh_port: "22"
 ## https://serversideup.net/open-source/spin/docs/command-reference/mkpasswd
 use_passwordless_sudo: true
 
-## Email Notifications
-postfix_hostname: "{{ inventory_hostname }}"
-
 ## Set variables below to enable external SMTP relay
 # postfix_relayhost: "smtp.example.com"
 # postfix_relayhost_port: "587"
