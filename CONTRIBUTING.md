@@ -49,6 +49,14 @@ molecule verify # Runs the tests
 molecule destroy # Destroys the container
 ```
 
+If you want to run a specific operating system, you can use the following command:
+```bash
+MOLECULE_DISTRO=ubuntu2204 molecule test
+MOLECULE_DISTRO=ubuntu2404 molecule test
+```
+
+The variable just needs to be a valid image name for `geerlingguy/docker-${MOLECULE_DISTRO}-ansible:latest`.
+
 ## Testing the collection
 Instead of committing to a branch and testing on another machine, it might be easier to just build the collection and install it locally. This will build and install the collection locally on your machine. Look at the file `dev.sh` to see how this is done.
 
