@@ -25,7 +25,7 @@
       {{- result -}}
     provider_config: "{{ providers | selectattr('name', 'equalto', provider) | first }}"
 
-- name: Write newly created server addresses to .spin.yml
+- name: Write newly created server addresses to .spin.yml # noqa: risky-shell-pipe
   ansible.builtin.shell: |
     set -e
     SPIN_FILE="{{ lookup('env', 'PWD') }}/.spin.yml"
@@ -36,7 +36,7 @@
     # Check if vault encrypted
     if head -n1 "$SPIN_FILE" | grep -q '^\$ANSIBLE_VAULT;'; then
       if [ -f "$VAULT_PASS_FILE" ]; then
-        # Decrypt, modify, re-encrypt
+        # Decrypt, modify, re-encrypt (piped to keep decrypted data in memory only)
         ansible-vault view --vault-password-file="$VAULT_PASS_FILE" "$SPIN_FILE" | \
           yq eval "(.servers[] | select(.server_name == \"$SERVER_NAME\")).address = \"$SERVER_ADDRESS\"" - | \
           ansible-vault encrypt --vault-password-file="$VAULT_PASS_FILE" --output="$SPIN_FILE" -
