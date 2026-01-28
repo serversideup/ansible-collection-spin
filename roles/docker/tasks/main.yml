@@ -17,12 +17,13 @@
 - name: Open HTTP and HTTPS ports (if enabled)
   community.general.ufw:
     rule: allow
-    port: "{{ item }}"
-    proto: "tcp"
+    port: "{{ item.port }}"
+    proto: "{{ item.proto }}"
     comment: "Allow HTTP connections."
   loop:
-    - "80"
-    - "443"
+    - { port: "80", proto: "tcp" }
+    - { port: "443", proto: "tcp" }
+    - { port: "443", proto: "udp" }
   # Set backwards compatibility for the automatically_open_http_and_https_ports variable
   when: (automatically_open_http_and_https_ports | default(docker_open_web_ports)) | bool
   notify: Enable ufw
