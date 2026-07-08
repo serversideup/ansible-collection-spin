@@ -2,3 +2,4 @@
 test/results
 .spin.yml
 .vault-password
+.ansible/
