@@ -1,8 +1,8 @@
 ---
-# Ubuntu 26.04 no longer ships the 'ntp' package (24.04 replaced it with a
-# transitional package to ntpsec), so chrony is now the supported time sync
-# daemon across all versions. These tasks only run when a legacy NTP daemon
-# is detected on the server.
+- name: Gather service facts.
+  ansible.builtin.service_facts:
+
+# Match on units, not packages: Ubuntu 24.04's transitional 'ntp' package ships no ntp.service.
 - name: Stop and disable legacy NTP services (replaced by chrony).
   ansible.builtin.service:
     name: "{{ item }}"
@@ -11,7 +11,7 @@
   loop:
     - ntp
     - ntpsec
-  when: item in ansible_facts.packages
+  when: (item + '.service') in ansible_facts.services
 
 - name: Remove legacy NTP packages (replaced by chrony).
   ansible.builtin.apt:

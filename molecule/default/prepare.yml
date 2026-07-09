@@ -3,9 +3,7 @@
   hosts: all
   become: true
   tasks:
-    # Preinstall the legacy NTP daemon so converge exercises the migration
-    # to chrony. Ubuntu 26.04+ no longer ships the 'ntp' package, so those
-    # versions test the clean-install path instead.
+    # Ubuntu 26.04+ has no 'ntp' package, so those versions test the clean-install path instead.
     - name: Install legacy NTP package to test the migration to chrony.
       ansible.builtin.apt:
         name: ntp
@@ -13,8 +11,7 @@
         update_cache: true
       when: ansible_distribution_version is version('26.04', '<')
 
-    # On 22.04 'ntp' provides the ntp service. On 24.04 'ntp' is a
-    # transitional package that installs ntpsec instead.
+    # The 'ntp' package is transitional to ntpsec on 24.04, so the service name differs.
     - name: Start legacy NTP service to test the migration to chrony.
       ansible.builtin.service:
         name: "{{ 'ntp' if ansible_distribution_version is version('24.04', '<') else 'ntpsec' }}"
