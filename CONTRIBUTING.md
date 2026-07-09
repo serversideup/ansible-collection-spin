@@ -53,6 +53,7 @@ If you want to run a specific operating system, you can use the following comman
 ```bash
 MOLECULE_DISTRO=ubuntu2204 molecule test
 MOLECULE_DISTRO=ubuntu2404 molecule test
+MOLECULE_DISTRO=ubuntu2604 molecule test
 ```
 
 The variable just needs to be a valid image name for `geerlingguy/docker-${MOLECULE_DISTRO}-ansible:latest`.

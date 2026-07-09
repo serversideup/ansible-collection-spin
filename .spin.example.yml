@@ -39,11 +39,11 @@ providers:
 servers:
   # - server_name: ubuntu-2gb-ash-1
   #   environment: production
-  #   hardware_profile: hetzner_2c_2gb_ubuntu2404
+  #   hardware_profile: hetzner_2c_2gb_ubuntu2604
 
   # - server_name: ubuntu-1gb-ord-2
   #   environment: staging
-  #   hardware_profile: vultr_1c_1gb_ubuntu2404
+  #   hardware_profile: vultr_1c_1gb_ubuntu2604
 
 ##############################################################
 # 🤖 Hardware Profiles
@@ -51,30 +51,30 @@ servers:
 
 hardware_profiles:
   # Hetzner
-  - name: hetzner_2c_2gb_ubuntu2404
+  - name: hetzner_2c_2gb_ubuntu2604
     provider: hetzner
     profile_config:
       location: ash
       server_type: cpx11
-      image: ubuntu-24.04
+      image: ubuntu-26.04
       backups: true
 
   # Vultr
-  - name: vultr_1c_1gb_ubuntu2404
+  - name: vultr_1c_1gb_ubuntu2604
     provider: vultr
     profile_config:
       region: ord
       plan: vc2-1c-1gb
-      os: "Ubuntu 24.04 LTS x64"
+      os: "Ubuntu 26.04 LTS x64"
       backups: true
   
   # DigitalOcean
-  - name: digitalocean_1c_1gb_ubuntu2404
+  - name: digitalocean_1c_1gb_ubuntu2604
     provider: digitalocean
     profile_config:
       region: nyc3
       size: s-1vcpu-1gb
-      image: ubuntu-24-04-x64
+      image: ubuntu-26-04-x64
       backups: true
 
 ##############################################################

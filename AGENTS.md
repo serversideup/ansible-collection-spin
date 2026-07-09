@@ -285,7 +285,7 @@ driver:
   name: docker
 platforms:
   - name: instance
-    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2404}-ansible:latest
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2604}-ansible:latest
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -362,7 +362,7 @@ lint: |
 ### Running Tests
 
 ```bash
-# Run with default distro (Ubuntu 24.04)
+# Run with default distro (Ubuntu 26.04)
 molecule test
 
 # Run with specific distro
@@ -574,6 +574,7 @@ molecule test
 # Test matrix (run manually)
 MOLECULE_DISTRO=ubuntu2204 molecule test
 MOLECULE_DISTRO=ubuntu2404 molecule test
+MOLECULE_DISTRO=ubuntu2604 molecule test
 ```
 
 ## Related Projects
@@ -599,7 +600,7 @@ Don't assume when:
 - **Security first**: Always use `no_log` for sensitive data
 - **Validation**: Validate inputs before making changes
 - **Testing**: All changes should pass Molecule tests
-- **Compatibility**: Support Ubuntu 22.04 and 24.04 (Debian-based)
+- **Compatibility**: Support Ubuntu 22.04, 24.04, and 26.04 (Debian-based)
 - **FQCN always**: Use fully qualified collection names for all modules
 - **Open source mindset**: Write code that others can understand and contribute to
 

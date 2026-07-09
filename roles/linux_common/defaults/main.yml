@@ -10,6 +10,18 @@ skip_os_version_validation: false
 server_timezone: "Etc/UTC"
 server_contact: changeme@example.com
 
+## NTP - Time Synchronization (chrony)
+## By default, chrony uses Ubuntu's stock NTP sources, which are geo-aware
+## (pool.ntp.org resolves to servers near your machine). Uncomment and set
+## your own list to add your own sources (written to /etc/chrony/sources.d/spin.sources
+## and used alongside Ubuntu's defaults - chrony automatically prefers the best sources).
+## Plain hostnames are configured as 'server <host> iburst'. You can also pass
+## full chrony directives (lines starting with 'server', 'pool', or 'peer').
+# chrony_ntp_servers:
+#   - time.cloudflare.com
+#   - ntp.internal.example.com
+#   - "pool 0.de.pool.ntp.org iburst"
+
 # SSH
 ssh_port: "22"
 ssh_permit_root_login: "no"
@@ -31,6 +43,7 @@ ssh_gateway_ports: "yes"
 
 # Base packages that will always be installed
 common_installed_packages:
+  - chrony
   - cron
   - curl
   - figlet
@@ -40,7 +53,6 @@ common_installed_packages:
   - logrotate
   - mailutils
   - ncdu
-  - ntp
   - python3-minimal
   - python3-pip
   - ssh
