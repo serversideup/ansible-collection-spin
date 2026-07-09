@@ -65,6 +65,36 @@
         fail_msg: "Failed to assert Docker Swarm was initialized."
 
     ###########################################
+    # Chrony / NTP Migration Verification
+    ###########################################
+
+    - name: Gather package facts.
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Assert chrony is installed and legacy NTP daemons are removed.
+      ansible.builtin.assert:
+        that:
+          - "'chrony' in ansible_facts.packages"
+          - "'ntp' not in ansible_facts.packages"
+          - "'ntpsec' not in ansible_facts.packages"
+        fail_msg: "Expected chrony to be installed and ntp/ntpsec to be removed."
+
+    - name: Read custom chrony sources file.
+      ansible.builtin.slurp:
+        src: /etc/chrony/sources.d/spin.sources
+      register: spin_sources_file
+      when: chrony_ntp_servers is defined
+
+    - name: Assert custom NTP servers are configured.
+      ansible.builtin.assert:
+        that:
+          - "'server time.cloudflare.com iburst' in spin_sources_file.content | b64decode"
+          - "'pool 0.pool.ntp.org iburst' in spin_sources_file.content | b64decode"
+        fail_msg: "Custom NTP servers are not rendered correctly in /etc/chrony/sources.d/spin.sources."
+      when: chrony_ntp_servers is defined
+
+    ###########################################
     # Postfix SASL Configuration Verification
     ###########################################
 

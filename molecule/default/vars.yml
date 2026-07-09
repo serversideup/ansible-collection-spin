@@ -2,6 +2,12 @@ server_timezone: "America/Chicago"
 server_contact: "otheremail@example.com"
 use_passwordless_sudo: false
 
+# Chrony NTP Configuration (for testing)
+# Covers both accepted formats: plain hostname and full chrony directive.
+chrony_ntp_servers:
+  - time.cloudflare.com
+  - "pool 0.pool.ntp.org iburst"
+
 # Postfix SMTP Relay Configuration (for testing)
 postfix_relayhost: "smtp.example.com"
 postfix_relayhost_port: "587"
