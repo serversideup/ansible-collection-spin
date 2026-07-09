@@ -80,6 +80,18 @@
           - "'ntpsec' not in ansible_facts.packages"
         fail_msg: "Expected chrony to be installed and ntp/ntpsec to be removed."
 
+    - name: Check for running legacy NTP processes.
+      ansible.builtin.command: pgrep -x ntpd
+      register: legacy_ntp_process
+      changed_when: false
+      failed_when: false
+
+    - name: Assert no legacy NTP daemon is running.
+      ansible.builtin.assert:
+        that:
+          - legacy_ntp_process.rc != 0
+        fail_msg: "A legacy ntpd process is still running after migration to chrony."
+
     - name: Read custom chrony sources file.
       ansible.builtin.slurp:
         src: /etc/chrony/sources.d/spin.sources
