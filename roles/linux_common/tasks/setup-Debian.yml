@@ -1,11 +1,13 @@
 ---
-- name: Gather package facts.
-  ansible.builtin.package_facts:
-    manager: apt
-
-- name: Migrate legacy NTP daemons to chrony (only runs when one is detected).
-  ansible.builtin.include_tasks: migrate-ntp-to-chrony.yml
-  when: "'ntp' in ansible_facts.packages or 'ntpsec' in ansible_facts.packages"
+# Removing the packages also stops their daemons (dpkg prerm). Replaced by chrony.
+- name: Remove legacy NTP packages.
+  ansible.builtin.apt:
+    name:
+      - ntp
+      - ntpsec
+      - ntpsec-ntpdate
+    state: absent
+    purge: true
 
 - name: Install latest versions of common packages.
   ansible.builtin.apt:
