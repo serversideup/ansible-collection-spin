@@ -13,8 +13,7 @@
     state: latest
     update_cache: yes
 
-# Custom sources go in chrony's drop-in directory so we never have to own
-# the distro's chrony.conf (its contents differ across Ubuntu versions).
+# The drop-in directory keeps the distro's chrony.conf untouched (it differs across Ubuntu versions).
 - name: Configure custom NTP servers for chrony.
   ansible.builtin.template:
     src: etc/chrony/sources.d/spin.sources.j2
@@ -25,8 +24,7 @@
   when: chrony_ntp_servers is defined
   notify: Restart chrony
 
-# chrony.service sets ConditionVirtualization=!container, so systemd refuses
-# to run it inside containers (time sync comes from the host there).
+# chrony.service sets ConditionVirtualization=!container, so containers must skip this.
 - name: Ensure chrony is started and enabled on boot.
   ansible.builtin.service:
     name: chrony
