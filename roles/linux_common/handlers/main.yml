@@ -8,6 +8,11 @@
   community.general.ufw:
     state: enabled
 
+- name: Restart chrony
+  ansible.builtin.service:
+    name: chrony
+    state: restarted
+
 - name: Restart cron
   ansible.builtin.service:
     name: cron
