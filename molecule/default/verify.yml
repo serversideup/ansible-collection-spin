@@ -107,6 +107,22 @@
       when: chrony_ntp_servers is defined
 
     ###########################################
+    # Swap Container-Safety Verification
+    ###########################################
+
+    # Only pins the container gate - functional swap tests live in the swap-integration scenario.
+    - name: Check for a swap file.
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swap_file_check
+
+    - name: Assert no swap file was created in the container.
+      ansible.builtin.assert:
+        that:
+          - not swap_file_check.stat.exists
+        fail_msg: "A swap file should never be created inside containers."
+
+    ###########################################
     # Postfix SASL Configuration Verification
     ###########################################
 

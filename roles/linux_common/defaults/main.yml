@@ -38,6 +38,30 @@ ssh_gateway_ports: "yes"
 # postfix_relayhost_password: "mysupersecretpassword"
 
 ###########################################
+# Swap Configuration
+###########################################
+swap_enabled: true
+# Only manages the file at swap_file_path - never touches swap partitions or other swap files.
+swap_force: false
+swap_file_path: /swapfile
+swap_max_size_mb: 8192
+
+## Swap size follows Red Hat and Ubuntu sizing guidance (<=2GB: 2x RAM,
+## 2-8GB: matches RAM, >8GB: half of RAM), capped at swap_max_size_mb
+## since servers don't hibernate. Set a number here (in MB) to override.
+## https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/managing_storage_devices/getting-started-with-swap_managing-storage-devices
+## https://help.ubuntu.com/community/SwapFaq
+swap_size_mb: >-
+  {{ [((ansible_memtotal_mb | int) * 2) if (ansible_memtotal_mb | int) <= 2048
+     else ((ansible_memtotal_mb | int) if (ansible_memtotal_mb | int) <= 8192
+     else [(ansible_memtotal_mb | int) // 2, 4096] | max),
+     (swap_max_size_mb | int)] | min }}
+
+## Uncomment to also set kernel swappiness (10 = swap only under real memory pressure).
+## https://docs.kernel.org/admin-guide/sysctl/vm.html#swappiness
+# swap_swappiness: 10
+
+###########################################
 # Install Packages Configuration
 ###########################################
 
