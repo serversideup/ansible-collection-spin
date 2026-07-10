@@ -60,8 +60,29 @@ jobs:
                   ANSIBLE_FORCE_COLOR: '1'
                   MOLECULE_DISTRO: ${{ matrix.distro }}
 
+    swap-integration:
+        name: Swap Integration (VM)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the codebase.
+              uses: actions/checkout@v7
+
+            - name: Set up Python 3.
+              uses: actions/setup-python@v6
+              with:
+                  python-version: '3.x'
+
+            - name: Install test dependencies.
+              run: pip3 install -r requirements.txt
+
+            - name: Run Molecule swap integration tests.
+              run: molecule test -s swap-integration
+              env:
+                  PY_COLORS: '1'
+                  ANSIBLE_FORCE_COLOR: '1'
+
     release:
       if: ${{ github.ref_type == 'tag' }}
-      needs: [lint, molecule]
+      needs: [lint, molecule, swap-integration]
       uses: ./.github/workflows/release.yml
       secrets: inherit

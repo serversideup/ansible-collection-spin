@@ -1,0 +1,93 @@
+---
+- name: Check the current state of the swap file.
+  ansible.builtin.stat:
+    path: "{{ swap_file_path }}"
+  register: swap_file
+
+# Swap partitions and swap files created outside this role are always left untouched.
+- name: Determine if swap should be managed on this server.
+  ansible.builtin.set_fact:
+    swap_managed: "{{ swap_file.stat.exists or (ansible_swaptotal_mb | int) == 0 or swap_force }}"
+
+- name: Show notice when existing swap is left as-is.
+  ansible.builtin.debug:
+    msg: "Existing swap ({{ ansible_swaptotal_mb }}MB) detected. Leaving it unmanaged. Set 'swap_force: true' to create {{ swap_file_path }} anyway."
+  when: not swap_managed
+
+- name: Manage the swap file.
+  when: swap_managed
+  block:
+    - name: Check available disk space for the swap file.
+      ansible.builtin.command: "df --output=avail --block-size=1M {{ swap_file_path | dirname }}"
+      register: swap_disk
+      changed_when: false
+
+    - name: Determine if the swap file fits on disk (with a 1GB margin).
+      ansible.builtin.set_fact:
+        swap_fits: "{{ (swap_disk.stdout_lines | last | trim | int) > (swap_size_mb | int) + 1024 }}"
+
+    - name: Show warning when there is not enough disk space for swap.
+      ansible.builtin.debug:
+        msg: "⚠️ WARNING: Skipping swap file creation. {{ swap_size_mb }}MB swap + 1GB margin exceeds the available disk space. Set 'swap_size_mb' to a smaller value or 'swap_enabled: false' to silence this warning."
+      when: not swap_fits and not swap_file.stat.exists
+
+    - name: Check if the swap file is active.
+      ansible.builtin.command: "grep -qE '^{{ swap_file_path }}\\s' /proc/swaps"
+      register: swap_active
+      changed_when: false
+      failed_when: false
+
+    - name: Determine if the swap file must be recreated at a new size.
+      ansible.builtin.set_fact:
+        swap_resize: "{{ swap_force and swap_file.stat.exists and swap_fits and swap_file.stat.size != (swap_size_mb | int) * 1048576 }}"
+
+    # A genuine swapoff failure must abort the resize so an in-use swap file is never deleted.
+    - name: Deactivate the swap file before resizing it.
+      ansible.builtin.command: "swapoff {{ swap_file_path }}"
+      when: swap_resize and swap_active.rc == 0
+
+    - name: Remove the swap file before resizing it.
+      ansible.builtin.file:
+        path: "{{ swap_file_path }}"
+        state: absent
+      when: swap_resize
+
+    - name: Create and activate the swap file.
+      when: swap_file.stat.exists or swap_fits
+      block:
+        - name: Allocate the swap file.
+          ansible.builtin.command: "fallocate -l {{ swap_size_mb | int }}M {{ swap_file_path }}"
+          args:
+            creates: "{{ swap_file_path }}"
+          register: swap_created
+
+        - name: Secure the swap file permissions.
+          ansible.builtin.file:
+            path: "{{ swap_file_path }}"
+            owner: root
+            group: root
+            mode: 0600
+
+        - name: Format the swap file.
+          ansible.builtin.command: "mkswap {{ swap_file_path }}"
+          when: swap_created is changed
+
+        - name: Persist the swap file in fstab.
+          ansible.posix.mount:
+            path: none
+            src: "{{ swap_file_path }}"
+            fstype: swap
+            opts: sw
+            state: present
+
+        - name: Activate the swap file.
+          ansible.builtin.command: "swapon {{ swap_file_path }}"
+          when: swap_resize or swap_active.rc != 0
+
+- name: Set kernel swappiness.
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "{{ swap_swappiness }}"
+    sysctl_file: /etc/sysctl.d/99-swap.conf
+    reload: true
+  when: swap_swappiness is defined

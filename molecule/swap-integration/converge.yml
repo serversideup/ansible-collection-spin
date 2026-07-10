@@ -1,0 +1,11 @@
+---
+- name: Converge
+  hosts: instance
+  become: true
+  tasks:
+    - name: Manage swap with a deterministic test size.
+      ansible.builtin.include_role:
+        name: serversideup.spin.linux_common
+        tasks_from: swap
+      vars:
+        swap_size_mb: 1024
