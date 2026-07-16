@@ -70,7 +70,8 @@ def merge_vars($server):
     (.["hardware_profile_" + ($server.hardware_profile // "")].vars // {}) *
     (.["environment_" + ($server.environment // "")].vars // {}) *
     ($server | del(.environment)) *
-    (if $server.environment then {spin_environment: $server.environment} else {} end);
+    (if $server.environment then {spin_environment: $server.environment} else {} end) *
+    (if $server.server_name and ($server.server_hostname == null) then {server_hostname: $server.server_name} else {} end);
 
 # Base structure
 {

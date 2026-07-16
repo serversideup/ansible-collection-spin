@@ -6,6 +6,11 @@
   ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_facts['os_family'] == 'Debian'
 
+# The Spin dynamic inventory derives server_hostname from each server's server_name.
+- name: Set the hostname.
+  ansible.builtin.include_tasks: hostname.yml
+  when: server_hostname is defined
+
 # Skipped in containers because swap changes affect the host kernel.
 - name: Configure swap space.
   ansible.builtin.include_tasks: swap.yml
