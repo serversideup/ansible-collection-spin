@@ -155,8 +155,8 @@
 
 - name: Set main IP address and add servers to in-memory inventory
   ansible.builtin.add_host:
-    name: "{{ item.vultr_instance.label }}"
-    ansible_host: "{{ item.vultr_instance.main_ip }}"
+    name: "{{ item.vultr_instance.main_ip }}"
+    server_name: "{{ item.vultr_instance.label }}"
     groups: newly_created_servers
   loop: "{{ vultr_created_servers.results }}"
   when: not item.failed
