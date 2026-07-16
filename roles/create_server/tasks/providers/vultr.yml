@@ -28,12 +28,12 @@
         (vultr_created_ssh_keys.results | selectattr('changed', 'true') | map(attribute='vultr_ssh_key.name') | list)
       }}
 
-- name: Ensure firewall group is present.
+- name: Ensure Vultr firewall group is present
   vultr.cloud.firewall_group:
     api_key: "{{ vultr_api_token }}"
     description: "spin-web-firewall"
 
-- name: Ensure firewall rules are present
+- name: Ensure Vultr firewall rules are present
   vultr.cloud.firewall_rule:
     api_key: "{{ vultr_api_token }}"
     group: "spin-web-firewall"
