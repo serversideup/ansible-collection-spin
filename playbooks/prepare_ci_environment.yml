@@ -44,8 +44,10 @@
 
     - name: Set {{ spin_environment | upper }}_SSH_REMOTE_HOSTNAME with first manager host
       ansible.builtin.copy:
-        content: "{{ groups[spin_environment + '_managers'][0] }}"
+        content: "{{ hostvars[first_manager].ansible_host | default(first_manager) }}"
         dest: "{{ spin_ci_folder_full_path }}/{{ spin_environment | upper }}_SSH_REMOTE_HOSTNAME"
+      vars:
+        first_manager: "{{ groups[spin_environment + '_managers'] | default([none]) | first }}"
       when: groups[spin_environment + '_managers'] is defined and groups[spin_environment + '_managers'] | length > 0
       tags:
         - always
@@ -62,7 +64,11 @@
 
     - name: Run ssh-keyscan on manager hosts.
       ansible.builtin.shell: >-
-        ssh-keyscan -p {{ ssh_port }} {{ groups['swarm_managers'] | join(' ') }} | sort
+        ssh-keyscan -p {{ ssh_port }} {{ manager_addresses }} | sort
+      vars:
+        manager_addresses: >-
+          {%- for host in groups['swarm_managers'] | default([]) -%}
+          {{ hostvars[host].ansible_host | default(host) }}{{ '' if loop.last else ' ' }}{%- endfor -%}
       register: keyscan_result
       when: groups['swarm_managers'] is defined and groups['swarm_managers'] | length > 0
       changed_when: false
