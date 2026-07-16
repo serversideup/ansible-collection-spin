@@ -52,9 +52,9 @@ swap_max_size_mb: 8192
 ## https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/managing_storage_devices/getting-started-with-swap_managing-storage-devices
 ## https://help.ubuntu.com/community/SwapFaq
 swap_size_mb: >-
-  {{ [((ansible_memtotal_mb | int) * 2) if (ansible_memtotal_mb | int) <= 2048
-     else ((ansible_memtotal_mb | int) if (ansible_memtotal_mb | int) <= 8192
-     else [(ansible_memtotal_mb | int) // 2, 4096] | max),
+  {{ [((ansible_facts['memtotal_mb'] | int) * 2) if (ansible_facts['memtotal_mb'] | int) <= 2048
+     else ((ansible_facts['memtotal_mb'] | int) if (ansible_facts['memtotal_mb'] | int) <= 8192
+     else [(ansible_facts['memtotal_mb'] | int) // 2, 4096] | max),
      (swap_max_size_mb | int)] | min }}
 
 ## Uncomment to also set kernel swappiness (10 = swap only under real memory pressure).

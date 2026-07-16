@@ -18,6 +18,7 @@
       - ca-certificates
       - curl
       - gnupg
+      - python3-debian
     state: present
 
 - name: Add Docker apt key.
@@ -31,10 +32,36 @@
   ignore_errors: "{{ docker_apt_ignore_key_error }}"
 
 - name: Add Docker repository.
-  ansible.builtin.apt_repository:
-    repo: "{{ docker_apt_repository }}"
+  ansible.builtin.deb822_repository:
+    name: docker
+    uris: "{{ docker_repo_url }}/{{ ansible_facts['distribution'] | lower }}"
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: "{{ docker_apt_release_channel }}"
+    architectures: "{{ docker_apt_arch }}"
+    signed_by: /etc/apt/trusted.gpg.d/docker.asc
     state: present
+  register: docker_repo
+
+# Servers provisioned before the deb822 migration have a duplicate apt_repository-era .list file.
+- name: Find legacy Docker repository files.
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "download_docker_com_linux_*.list"
+  register: legacy_docker_repo_files
+
+- name: Remove legacy Docker repository files.
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ legacy_docker_repo_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  register: legacy_docker_repo_removal
+
+- name: Update apt cache when the Docker repository changed.
+  ansible.builtin.apt:
     update_cache: true
+  when: docker_repo is changed or legacy_docker_repo_removal is changed
 
 - name: Install Docker packages.
   ansible.builtin.apt:

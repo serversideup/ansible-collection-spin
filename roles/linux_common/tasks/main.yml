@@ -4,14 +4,14 @@
 
 - name: Set up Debian (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 
 # Skipped in containers because swap changes affect the host kernel.
 - name: Configure swap space.
   ansible.builtin.include_tasks: swap.yml
   when:
     - swap_enabled | bool
-    - ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
+    - ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
 
 - name: Configure email alerts.
   ansible.builtin.include_tasks: email-alerts.yml
