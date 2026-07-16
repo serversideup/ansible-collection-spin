@@ -32,7 +32,7 @@
     name: chrony
     state: started
     enabled: true
-  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
+  when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
 
 - name: Install Python PIP packages (if defined).
   ansible.builtin.pip:

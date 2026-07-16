@@ -64,11 +64,13 @@ def add_server_to_groups($server):
         {}
     end;
 
+# The environment key is renamed to spin_environment because "environment" is a reserved name in Ansible.
 def merge_vars($server):
     (.["provider_" + ($server.provider // "")].vars // {}) *
     (.["hardware_profile_" + ($server.hardware_profile // "")].vars // {}) *
     (.["environment_" + ($server.environment // "")].vars // {}) *
-    $server;
+    ($server | del(.environment)) *
+    (if $server.environment then {spin_environment: $server.environment} else {} end);
 
 # Base structure
 {
@@ -154,10 +156,10 @@ remove_null_hosts |
         )[]
     ] | flatten | unique
 )) |
-# Ensure ALL groups have a hosts key with empty array if missing
-walk(
-    if type == "object" and (has("children") | not) and (has("hosts") | not) then
-        . + {hosts: []}
+# Ensure top-level groups have a hosts key; scoped so "hosts" never leaks into hostvars or group vars (reserved name).
+with_entries(
+    if .key != "_meta" and (.value | type == "object" and (has("children") | not) and (has("hosts") | not)) then
+        .value += {hosts: []}
     else
         .
     end

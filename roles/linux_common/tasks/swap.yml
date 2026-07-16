@@ -7,11 +7,11 @@
 # Swap partitions and swap files created outside this role are always left untouched.
 - name: Determine if swap should be managed on this server.
   ansible.builtin.set_fact:
-    swap_managed: "{{ swap_file.stat.exists or (ansible_swaptotal_mb | int) == 0 or swap_force }}"
+    swap_managed: "{{ swap_file.stat.exists or (ansible_facts['swaptotal_mb'] | int) == 0 or swap_force }}"
 
 - name: Show notice when existing swap is left as-is.
   ansible.builtin.debug:
-    msg: "Existing swap ({{ ansible_swaptotal_mb }}MB) detected. Leaving it unmanaged. Set 'swap_force: true' to create {{ swap_file_path }} anyway."
+    msg: "Existing swap ({{ ansible_facts['swaptotal_mb'] }}MB) detected. Leaving it unmanaged. Set 'swap_force: true' to create {{ swap_file_path }} anyway."
   when: not swap_managed
 
 - name: Manage the swap file.
