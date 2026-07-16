@@ -35,11 +35,17 @@
   ansible.builtin.set_fact:
     servers_missing_addresses: >-
       {{
-        servers | selectattr('address', 'undefined') | map('combine', {
-          'provider': hardware_profiles | 
-          selectattr('name', 'equalto', item.hardware_profile) | 
+        target_servers | selectattr('address', 'undefined') | map('combine', {
+          'provider': hardware_profiles |
+          selectattr('name', 'equalto', item.hardware_profile) |
           map(attribute='provider') | first
         }) | list
+      }}
+  vars:
+    target_servers: >-
+      {{
+        servers if target | default('all') == 'all'
+        else servers | selectattr('environment', 'in', [target, target ~ '_workers']) | list
       }}
   loop: "{{ servers }}"
 
