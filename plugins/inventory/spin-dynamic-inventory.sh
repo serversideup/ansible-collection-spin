@@ -53,12 +53,15 @@ generate_inventory() {
 def remove_null_hosts:
     walk(if type == "object" and has("hosts") and (.hosts | all(. == null)) then del(.hosts) else . end);
 
+# Hosts are named by server_name (nicer output labels); ansible_host carries the address.
+def host_alias($server): ($server.server_name // $server.address);
+
 def add_server_to_groups($server):
     if $server.address and $server.environment then
         if ($server.environment | endswith("_workers")) then
-            {($server.environment): {hosts: ((.[$server.environment].hosts // []) + [$server.address])}}
+            {($server.environment): {hosts: ((.[$server.environment].hosts // []) + [host_alias($server)])}}
         else
-            {($server.environment + "_managers"): {hosts: ((.[$server.environment + "_managers"].hosts // []) + [$server.address])}}
+            {($server.environment + "_managers"): {hosts: ((.[$server.environment + "_managers"].hosts // []) + [host_alias($server)])}}
         end
     else
         {}
@@ -71,7 +74,10 @@ def merge_vars($server):
     (.["environment_" + ($server.environment // "")].vars // {}) *
     ($server | del(.environment)) *
     (if $server.environment then {spin_environment: $server.environment} else {} end) *
-    (if $server.server_name and ($server.server_hostname == null) then {server_hostname: $server.server_name} else {} end);
+    (if $server.server_name and ($server.server_hostname == null) then {server_hostname: $server.server_name} else {} end) *
+    {ansible_host: $server.address};
+
+. as $input |
 
 # Base structure
 {
@@ -129,13 +135,13 @@ def merge_vars($server):
         . * {
             ("hardware_profile_" + ($server.hardware_profile // "")): {
                 hosts: (
-                    (.[("hardware_profile_" + ($server.hardware_profile // ""))].hosts // []) + 
-                    [$server.address]
+                    (.[("hardware_profile_" + ($server.hardware_profile // ""))].hosts // []) +
+                    [host_alias($server)]
                 )
             },
             _meta: {
                 hostvars: {
-                    ($server.address): merge_vars($server)
+                    (host_alias($server)): merge_vars($server)
                 }
             }
         } * 
@@ -148,15 +154,12 @@ def merge_vars($server):
 # Combine all results
 ($base * $provider_result * $hardware_profile_result * $server_result) |
 remove_null_hosts |
-.all.hosts = ((.servers // []) | map(select(.address)) | map(.address)) |
-.ungrouped.hosts = (.all.hosts - (
-    [
-        (.environments // [] | .[].name | . as $env |
-            [([$env + "_managers", $env + "_workers"] | 
-            map(.[].hosts // [])[])]
-        )[]
-    ] | flatten | unique
-)) |
+.all.hosts = (($input.servers // []) | map(select(.address)) | map(.server_name // .address)) |
+. as $result |
+.ungrouped.hosts = (.all.hosts - ([
+    $input.environments // [] | .[].name |
+    ($result[. + "_managers"].hosts // []) + ($result[. + "_workers"].hosts // [])
+] | flatten | unique)) |
 # Ensure top-level groups have a hosts key; scoped so "hosts" never leaks into hostvars or group vars (reserved name).
 with_entries(
     if .key != "_meta" and (.value | type == "object" and (has("children") | not) and (has("hosts") | not)) then
@@ -209,6 +212,19 @@ validate_inventory() {
   if [ -n "$invalid_addresses" ]; then
     echo "[ERROR] Invalid inventory file. Invalid server addresses found:"
     echo "$invalid_addresses"
+    exit 1
+  fi
+
+  # Server names become inventory hostnames, so they must be hostname-safe
+  invalid_server_names=$(echo "$server_names" | while read -r name; do
+    if [ -n "$name" ] && ! echo "$name" | grep -Eq '^[a-zA-Z0-9][a-zA-Z0-9._-]*$'; then
+      echo "$name"
+    fi
+  done)
+
+  if [ -n "$invalid_server_names" ]; then
+    echo "[ERROR] Invalid inventory file. Server names must contain only letters, numbers, dots, dashes, or underscores:"
+    echo "$invalid_server_names"
     exit 1
   fi
 

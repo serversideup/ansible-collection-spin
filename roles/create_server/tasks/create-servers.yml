@@ -28,8 +28,8 @@
 - name: Write newly created server addresses to .spin.yml
   ansible.builtin.lineinfile:
     path: "{{ lookup('env', 'PWD') }}/.spin.yml"
-    insertafter: "server_name: {{ hostvars[item].server_name }}"
-    line: "    address: {{ item }}"
+    insertafter: "server_name: {{ item }}"
+    line: "    address: {{ hostvars[item].ansible_host }}"
   loop: "{{ groups['newly_created_servers'] }}"
 
 - name: Store newly created servers in fact
