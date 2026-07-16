@@ -1,0 +1,27 @@
+---
+- name: Set the hostname from the server name.
+  ansible.builtin.hostname:
+    name: "{{ server_hostname }}"
+
+# Prevents "sudo: unable to resolve host" warnings.
+- name: Ensure the hostname resolves locally.
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ server_hostname }}"
+    insertafter: '^127\.0\.0\.1'
+
+- name: Check if cloud-init is present.
+  ansible.builtin.stat:
+    path: /etc/cloud/cloud.cfg.d
+  register: cloud_init_config_dir
+
+# Cloud-init resets the hostname from provider metadata on every boot unless told to preserve it.
+- name: Ensure cloud-init preserves the hostname.
+  ansible.builtin.copy:
+    content: "preserve_hostname: true\n"
+    dest: /etc/cloud/cloud.cfg.d/99-spin-hostname.cfg
+    owner: root
+    group: root
+    mode: "0644"
+  when: cloud_init_config_dir.stat.exists
