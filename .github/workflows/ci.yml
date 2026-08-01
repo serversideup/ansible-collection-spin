@@ -81,8 +81,29 @@ jobs:
                   PY_COLORS: '1'
                   ANSIBLE_FORCE_COLOR: '1'
 
+    version:
+        name: Version
+        if: ${{ github.ref_type == 'tag' }}
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.parse.outputs.version }}
+        steps:
+            - name: Parse the release version from the tag.
+              id: parse
+              env:
+                  TAG: ${{ github.ref_name }}
+              run: |
+                  version="${TAG#v}"
+                  if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+                      echo "::error::Tag '${TAG}' is not a semantic version. Expected something like v3.0.1 or v3.0.1-beta1."
+                      exit 1
+                  fi
+                  echo "version=${version}" >> "$GITHUB_OUTPUT"
+
     release:
-      if: ${{ github.ref_type == 'tag' }}
-      needs: [lint, molecule, swap-integration]
-      uses: ./.github/workflows/release.yml
-      secrets: inherit
+        if: ${{ github.ref_type == 'tag' }}
+        needs: [version, lint, molecule, swap-integration]
+        uses: ./.github/workflows/release.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+        secrets: inherit

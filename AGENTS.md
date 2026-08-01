@@ -561,6 +561,16 @@ The CI workflow runs:
 2. **Molecule Tests**: Matrix testing across Ubuntu versions
 3. **Release**: Publish to Ansible Galaxy on tag
 
+### Cutting a Release
+
+The git tag is the single source of truth for the version. To release, draft a new
+release in the GitHub UI, create a tag like `v3.0.1` against `main`, and publish it.
+Pushing the tag from the CLI works the same way.
+
+CI then parses the version from the tag, stamps it into `galaxy.yml`, and publishes to
+Ansible Galaxy only after lint, molecule, and swap-integration all pass. The `version`
+field committed in `galaxy.yml` is a `0.0.0` placeholder and is never edited by hand.
+
 ### Running CI Locally
 
 ```bash

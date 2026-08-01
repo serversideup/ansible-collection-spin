@@ -1,6 +1,12 @@
+---
 name: Release
 on:
     workflow_call:
+        inputs:
+            version:
+                description: 'Semantic version to publish, without a leading "v".'
+                required: true
+                type: string
 
 jobs:
   release:
@@ -8,17 +14,26 @@ jobs:
       steps:
         - name: Check out the codebase.
           uses: actions/checkout@v7
-    
+
         - name: Set up Python 3.
           uses: actions/setup-python@v6
           with:
             python-version: '3.x'
-    
+
         - name: Install Ansible.
           run: pip3 install ansible-core
-    
+
+        - name: Stamp the release version into galaxy.yml.
+          env:
+            VERSION: ${{ inputs.version }}
+          run: |
+            sed -i -E "s|^version:.*|version: ${VERSION}|" galaxy.yml
+            grep '^version:' galaxy.yml
+
         - name: Build Collection
           run: ansible-galaxy collection build
-      
+
         - name: Publish Collection to Ansible Galaxy
-          run: ansible-galaxy collection publish ./serversideup-spin-*.tar.gz --api-key ${{ secrets.GALAXY_API_KEY }}
+          env:
+            VERSION: ${{ inputs.version }}
+          run: ansible-galaxy collection publish "./serversideup-spin-${VERSION}.tar.gz" --api-key ${{ secrets.GALAXY_API_KEY }}
