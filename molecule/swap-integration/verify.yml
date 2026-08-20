@@ -1,0 +1,93 @@
+---
+- name: Verify
+  hosts: instance
+  become: true
+  tasks:
+    ###########################################
+    # Fresh Creation (from converge)
+    ###########################################
+
+    - name: Check the swap file state.
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swap_file_check
+
+    - name: Assert the swap file was created with the expected size and permissions.
+      ansible.builtin.assert:
+        that:
+          - swap_file_check.stat.exists
+          - swap_file_check.stat.size == 1024 * 1048576
+          - swap_file_check.stat.mode == '0600'
+        fail_msg: "Expected a 1024MB swap file at /swapfile with mode 0600."
+
+    - name: Check the swap file is active.
+      ansible.builtin.command: grep -E '^/swapfile\s' /proc/swaps
+      changed_when: false
+
+    - name: Check the swap file persists in fstab.
+      ansible.builtin.command: grep -E '^/swapfile\s+none\s+swap' /etc/fstab
+      changed_when: false
+
+    ###########################################
+    # Force Resize
+    ###########################################
+
+    - name: Resize the swap file with swap_force.
+      ansible.builtin.include_role:
+        name: serversideup.spin.linux_common
+        tasks_from: swap
+      vars:
+        swap_size_mb: 512
+        swap_force: true
+
+    - name: Check the resized swap file state.
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swap_resized_check
+
+    - name: Assert the swap file was recreated at the new size.
+      ansible.builtin.assert:
+        that:
+          - swap_resized_check.stat.size == 512 * 1048576
+        fail_msg: "Expected the swap file to be resized to 512MB, got {{ swap_resized_check.stat.size }} bytes."
+
+    - name: Check the resized swap file is active.
+      ansible.builtin.command: grep -E '^/swapfile\s' /proc/swaps
+      changed_when: false
+
+    ###########################################
+    # Existing Foreign Swap Is Respected
+    ###########################################
+
+    - name: Deactivate and remove the managed swap file.
+      ansible.builtin.shell: swapoff /swapfile && rm -f /swapfile
+      changed_when: true
+
+    - name: Create and activate a foreign swap file.
+      ansible.builtin.shell: >-
+        fallocate -l 128M /foreign-swap && chmod 600 /foreign-swap &&
+        mkswap /foreign-swap && swapon /foreign-swap
+      changed_when: true
+
+    - name: Refresh facts so swap totals reflect the foreign swap.
+      ansible.builtin.setup:
+
+    - name: Run swap management while foreign swap is active.
+      ansible.builtin.include_role:
+        name: serversideup.spin.linux_common
+        tasks_from: swap
+
+    - name: Check the swap file state after the foreign swap run.
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swap_foreign_check
+
+    - name: Assert foreign swap was respected and no swap file was created.
+      ansible.builtin.assert:
+        that:
+          - not swap_foreign_check.stat.exists
+        fail_msg: "The role must not create a swap file while other swap is active."
+
+    - name: Clean up the foreign swap file.
+      ansible.builtin.shell: swapoff /foreign-swap && rm -f /foreign-swap
+      changed_when: true

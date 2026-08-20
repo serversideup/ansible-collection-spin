@@ -1,0 +1,13 @@
+---
+- name: Prepare
+  hosts: instance
+  become: true
+  tasks:
+    - name: Disable all existing swap for a clean test slate.
+      ansible.builtin.command: swapoff -a
+      changed_when: true
+
+    - name: Remove any pre-existing swap file at the test path.
+      ansible.builtin.file:
+        path: /swapfile
+        state: absent

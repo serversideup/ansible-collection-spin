@@ -15,10 +15,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Check out the codebase.
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Set up Python 3.
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version: '3.x'
 
@@ -39,13 +39,14 @@ jobs:
                 distro:
                     - ubuntu2204
                     - ubuntu2404
+                    - ubuntu2604
 
         steps:
             - name: Check out the codebase.
-              uses: actions/checkout@v4
+              uses: actions/checkout@v7
 
             - name: Set up Python 3.
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@v6
               with:
                   python-version: '3.x'
 
@@ -59,8 +60,50 @@ jobs:
                   ANSIBLE_FORCE_COLOR: '1'
                   MOLECULE_DISTRO: ${{ matrix.distro }}
 
+    swap-integration:
+        name: Swap Integration (VM)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the codebase.
+              uses: actions/checkout@v7
+
+            - name: Set up Python 3.
+              uses: actions/setup-python@v6
+              with:
+                  python-version: '3.x'
+
+            - name: Install test dependencies.
+              run: pip3 install -r requirements.txt
+
+            - name: Run Molecule swap integration tests.
+              run: molecule test -s swap-integration
+              env:
+                  PY_COLORS: '1'
+                  ANSIBLE_FORCE_COLOR: '1'
+
+    version:
+        name: Version
+        if: ${{ github.ref_type == 'tag' }}
+        runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.parse.outputs.version }}
+        steps:
+            - name: Parse the release version from the tag.
+              id: parse
+              env:
+                  TAG: ${{ github.ref_name }}
+              run: |
+                  version="${TAG#v}"
+                  if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+                      echo "::error::Tag '${TAG}' is not a semantic version. Expected something like v3.0.1 or v3.0.1-beta1."
+                      exit 1
+                  fi
+                  echo "version=${version}" >> "$GITHUB_OUTPUT"
+
     release:
-      if: ${{ github.ref_type == 'tag' }}
-      needs: [lint, molecule]
-      uses: ./.github/workflows/release.yml
-      secrets: inherit
+        if: ${{ github.ref_type == 'tag' }}
+        needs: [version, lint, molecule, swap-integration]
+        uses: ./.github/workflows/release.yml
+        with:
+            version: ${{ needs.version.outputs.version }}
+        secrets: inherit

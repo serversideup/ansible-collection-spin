@@ -1,9 +1,38 @@
 ---
+# Removing the packages also stops their daemons (dpkg prerm). Replaced by chrony.
+- name: Remove legacy NTP packages.
+  ansible.builtin.apt:
+    name:
+      - ntp
+      - ntpsec
+      - ntpsec-ntpdate
+    state: absent
+    purge: true
+
 - name: Install latest versions of common packages.
   ansible.builtin.apt:
     name: "{{ common_installed_packages + common_additional_packages }}"
     state: latest
     update_cache: yes
+
+# The drop-in directory keeps the distro's chrony.conf untouched (it differs across Ubuntu versions).
+- name: Configure custom NTP servers for chrony.
+  ansible.builtin.template:
+    src: etc/chrony/sources.d/spin.sources.j2
+    dest: /etc/chrony/sources.d/spin.sources
+    owner: root
+    group: root
+    mode: 0644
+  when: chrony_ntp_servers is defined
+  notify: Restart chrony
+
+# chrony.service sets ConditionVirtualization=!container, so containers must skip this.
+- name: Ensure chrony is started and enabled on boot.
+  ansible.builtin.service:
+    name: chrony
+    state: started
+    enabled: true
+  when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
 
 - name: Install Python PIP packages (if defined).
   ansible.builtin.pip:
@@ -12,10 +41,21 @@
   when: pip_packages is defined
 
 # Related GitHub issue: https://github.com/geerlingguy/docker-ubuntu2404-ansible/issues/2
+- name: Find Python EXTERNALLY-MANAGED marker files.
+  ansible.builtin.find:
+    paths: /usr/lib
+    patterns: EXTERNALLY-MANAGED
+    recurse: true
+    depth: 2
+  register: externally_managed_files
+
 - name: Ensure Python system warning is removed.
   ansible.builtin.file:
-    path: /usr/lib/python3.12/EXTERNALLY-MANAGED
+    path: "{{ item.path }}"
     state: absent
+  loop: "{{ externally_managed_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
 
 - name: Configure server to automatically install security updates.
   ansible.builtin.template:

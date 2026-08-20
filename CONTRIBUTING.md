@@ -53,6 +53,7 @@ If you want to run a specific operating system, you can use the following comman
 ```bash
 MOLECULE_DISTRO=ubuntu2204 molecule test
 MOLECULE_DISTRO=ubuntu2404 molecule test
+MOLECULE_DISTRO=ubuntu2604 molecule test
 ```
 
 The variable just needs to be a valid image name for `geerlingguy/docker-${MOLECULE_DISTRO}-ansible:latest`.
@@ -63,3 +64,8 @@ Instead of committing to a branch and testing on another machine, it might be ea
 ```bash
 bash dev.sh
 ```
+
+## Cutting a release
+The git tag is the single source of truth for the version. Draft a new release on GitHub, create a tag like `v3.0.1` against `main`, and publish it. CI parses the version from the tag, stamps it into `galaxy.yml`, and publishes to Ansible Galaxy once lint and all Molecule suites pass.
+
+The `version` field in `galaxy.yml` is a `0.0.0` placeholder. Do not edit it by hand.

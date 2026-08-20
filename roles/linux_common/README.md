@@ -6,7 +6,7 @@ Linux Common
 Requirements
 ------------
 
-For now, this project focuses on supporting **Ubuntu 22.04 LTS and 24.04 LTS** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
+For now, this project focuses on supporting **Ubuntu 22.04 LTS, 24.04 LTS, and 26.04 LTS** only. Choose any host that you'd like. All this role needs is an SSH connection to a user that has `sudo` privileges.
 
 Role Variables
 --------------
@@ -153,6 +153,9 @@ Example Playbook
 
 ```yml
     - hosts: servers
+      vars:
+        # Optional: use your inventory names as system hostnames.
+        server_hostname: "{{ inventory_hostname }}"
       roles:
          - { role: serversideup.spin.linux_common, server_timezone: 'America/Chicago' }
 ```

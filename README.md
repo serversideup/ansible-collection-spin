@@ -15,7 +15,7 @@ The Spin Ansible Collection is the secret magic that powers the [`spin provision
 To use this collection, it is recommended to install `spin` via the [official installation instructions](https://serversideup.net/open-source/spin/docs/). Once installed, you can use the `spin provision` command to provision your servers. This command will automatically install the collection for you.
 
 ## Requirements
-In the early phases of this project, we will be supporting **Ubuntu 22.04** and **Ubuntu 24.04** only. We do intend to support other operating systems as we continue to develop this project.
+In the early phases of this project, we will be supporting **Ubuntu 22.04**, **Ubuntu 24.04**, and **Ubuntu 26.04** only. We do intend to support other operating systems as we continue to develop this project.
 
 ## Demo
 Here's a demo showing a process of creating a new Laravel project and deploying it to production:
@@ -48,7 +48,7 @@ All of our software is free an open to the world. None of this can be brought to
 <p align="center"><a href="https://github.com/sponsors/serversideup"><img src="https://521public.s3.amazonaws.com/serversideup/sponsors/sponsor-box.png" alt="Sponsors"></a></p>
 
 #### Individual Supporters
-<!-- supporters --><a href="https://github.com/aagjalpankaj"><img src="https://github.com/aagjalpankaj.png" width="40px" alt="aagjalpankaj" /></a>&nbsp;&nbsp;<!-- supporters -->
+<!-- supporters --><p align="center"><a href="https://github.com/sponsors/serversideup"><img src="https://521public.s3.amazonaws.com/serversideup/sponsors/sponsor-empty-state.png" alt="Sponsors"></a></p><!-- supporters -->
 
 ## About Us
 We're [Dan](https://twitter.com/danpastori) and [Jay](https://twitter.com/jaydrogers) - a two person team with a passion for open source products. We created [Server Side Up](https://serversideup.net) to help share what we learn.

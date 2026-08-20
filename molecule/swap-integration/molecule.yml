@@ -1,0 +1,18 @@
+---
+# Runs against the machine executing molecule (a real VM in CI) because swap cannot be managed in containers.
+# CI-only: do not run on a workstation - it deactivates and replaces the local machine's swap.
+driver:
+  name: default
+  options:
+    managed: false
+platforms:
+  - name: instance
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      instance:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+verifier:
+  name: ansible

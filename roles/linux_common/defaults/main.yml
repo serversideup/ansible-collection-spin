@@ -10,12 +10,31 @@ skip_os_version_validation: false
 server_timezone: "Etc/UTC"
 server_contact: changeme@example.com
 
+## NTP - Time Synchronization (chrony)
+## By default, chrony uses Ubuntu's stock NTP sources, which are geo-aware
+## (pool.ntp.org resolves to servers near your machine). Uncomment and set
+## your own list to add your own sources (written to /etc/chrony/sources.d/spin.sources
+## and used alongside Ubuntu's defaults - chrony automatically prefers the best sources).
+## Plain hostnames are configured as 'server <host> iburst'. You can also pass
+## full chrony directives (lines starting with 'server', 'pool', or 'peer').
+# chrony_ntp_servers:
+#   - time.cloudflare.com
+#   - ntp.internal.example.com
+#   - "pool 0.de.pool.ntp.org iburst"
+
 # SSH
 ssh_port: "22"
 ssh_permit_root_login: "no"
 ssh_password_authentication: "no" 
 ssh_allow_tcp_forwarding: "yes"
 ssh_gateway_ports: "yes"
+
+## Sudo
+## Minutes sudo caches your credentials after a successful password prompt.
+## Set to 0 to require a password for every sudo command (useful when AI agents
+## or other automation share your login session). Leave commented out to keep
+## sudo's own default and let Spin stay out of this setting entirely.
+# sudo_timestamp_timeout: 0
 
 
 ## External SMTP Relay (Optional)
@@ -26,11 +45,36 @@ ssh_gateway_ports: "yes"
 # postfix_relayhost_password: "mysupersecretpassword"
 
 ###########################################
+# Swap Configuration
+###########################################
+swap_enabled: true
+# Only manages the file at swap_file_path - never touches swap partitions or other swap files.
+swap_force: false
+swap_file_path: /swapfile
+swap_max_size_mb: 8192
+
+## Swap size follows Red Hat and Ubuntu sizing guidance (<=2GB: 2x RAM,
+## 2-8GB: matches RAM, >8GB: half of RAM), capped at swap_max_size_mb
+## since servers don't hibernate. Set a number here (in MB) to override.
+## https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/managing_storage_devices/getting-started-with-swap_managing-storage-devices
+## https://help.ubuntu.com/community/SwapFaq
+swap_size_mb: >-
+  {{ [((ansible_facts['memtotal_mb'] | int) * 2) if (ansible_facts['memtotal_mb'] | int) <= 2048
+     else ((ansible_facts['memtotal_mb'] | int) if (ansible_facts['memtotal_mb'] | int) <= 8192
+     else [(ansible_facts['memtotal_mb'] | int) // 2, 4096] | max),
+     (swap_max_size_mb | int)] | min }}
+
+## Uncomment to also set kernel swappiness (10 = swap only under real memory pressure).
+## https://docs.kernel.org/admin-guide/sysctl/vm.html#swappiness
+# swap_swappiness: 10
+
+###########################################
 # Install Packages Configuration
 ###########################################
 
 # Base packages that will always be installed
 common_installed_packages:
+  - chrony
   - cron
   - curl
   - figlet
@@ -40,7 +84,6 @@ common_installed_packages:
   - logrotate
   - mailutils
   - ncdu
-  - ntp
   - python3-minimal
   - python3-pip
   - ssh
@@ -89,6 +132,8 @@ motd_services:
 ### Use the template below to set users and their authorized keys
 ## Passwords must be set with an encrypted hash. To do this, see the Ansible FAQ
 ## https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+## By default, users with a password are forced to change it on first login.
+## Set "force_password_change: false" to keep the password you set.
 
 # users:
 #   - username: alice
@@ -96,6 +141,7 @@ motd_services:
 #     state: present
 #     groups: ['adm','sudo']
 #     password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+#     force_password_change: false
 #     shell: "/bin/bash"
 #     authorized_keys:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"

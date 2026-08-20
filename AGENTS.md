@@ -73,7 +73,7 @@ ansible-collection-spin/
 # OS-specific tasks use conditional includes
 - name: Set up Debian (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
 ```
 
 **Task Naming**:
@@ -93,10 +93,10 @@ ansible-collection-spin/
 ```yaml
 # Docker role variables
 docker_edition: ce
-docker_apt_repository: "deb..."
+docker_apt_release_channel: stable
 docker_open_web_ports: true
 docker_swarm:
-  advertise_addr: "{{ ansible_default_ipv4.address }}"
+  advertise_addr: "{{ ansible_facts['default_ipv4']['address'] }}"
 
 # Linux common variables
 common_installed_packages: []
@@ -285,7 +285,7 @@ driver:
   name: docker
 platforms:
   - name: instance
-    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2404}-ansible:latest
+    image: geerlingguy/docker-${MOLECULE_DISTRO:-ubuntu2604}-ansible:latest
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -316,7 +316,7 @@ lint: |
       ansible.builtin.apt:
         update_cache: true
         cache_valid_time: 600
-      when: ansible_os_family == 'Debian'
+      when: ansible_facts['os_family'] == 'Debian'
 
     - name: Wait for systemd to complete initialization.
       ansible.builtin.command: systemctl is-system-running
@@ -362,7 +362,7 @@ lint: |
 ### Running Tests
 
 ```bash
-# Run with default distro (Ubuntu 24.04)
+# Run with default distro (Ubuntu 26.04)
 molecule test
 
 # Run with specific distro
@@ -524,7 +524,7 @@ skip_list:
 - ❌ Don't use `ignore_errors: true` without proper handling
 - ❌ Don't mix provider-specific code - use separate files
 - ❌ Don't forget `no_log` for passwords and tokens
-- ❌ Don't assume OS - always check `ansible_os_family`
+- ❌ Don't assume OS - always check `ansible_facts['os_family']`
 - ❌ Don't use `with_items` - prefer `loop`
 - ❌ Don't write non-idempotent tasks
 
@@ -561,6 +561,16 @@ The CI workflow runs:
 2. **Molecule Tests**: Matrix testing across Ubuntu versions
 3. **Release**: Publish to Ansible Galaxy on tag
 
+### Cutting a Release
+
+The git tag is the single source of truth for the version. To release, draft a new
+release in the GitHub UI, create a tag like `v3.0.1` against `main`, and publish it.
+Pushing the tag from the CLI works the same way.
+
+CI then parses the version from the tag, stamps it into `galaxy.yml`, and publishes to
+Ansible Galaxy only after lint, molecule, and swap-integration all pass. The `version`
+field committed in `galaxy.yml` is a `0.0.0` placeholder and is never edited by hand.
+
 ### Running CI Locally
 
 ```bash
@@ -574,6 +584,7 @@ molecule test
 # Test matrix (run manually)
 MOLECULE_DISTRO=ubuntu2204 molecule test
 MOLECULE_DISTRO=ubuntu2404 molecule test
+MOLECULE_DISTRO=ubuntu2604 molecule test
 ```
 
 ## Related Projects
@@ -599,7 +610,7 @@ Don't assume when:
 - **Security first**: Always use `no_log` for sensitive data
 - **Validation**: Validate inputs before making changes
 - **Testing**: All changes should pass Molecule tests
-- **Compatibility**: Support Ubuntu 22.04 and 24.04 (Debian-based)
+- **Compatibility**: Support Ubuntu 22.04, 24.04, and 26.04 (Debian-based)
 - **FQCN always**: Use fully qualified collection names for all modules
 - **Open source mindset**: Write code that others can understand and contribute to
 

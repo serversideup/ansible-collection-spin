@@ -25,6 +25,24 @@
     line: '%sudo ALL=(ALL) NOPASSWD: ALL'
     validate: '/usr/sbin/visudo -cf %s'
 
+# The drop-in keeps /etc/sudoers distro-owned. Leaving 'sudo_timestamp_timeout' unset
+# means the setting isn't managed at all, so sudo keeps its own default.
+- name: Configure how long sudo caches credentials.
+  ansible.builtin.template:
+    src: etc/sudoers.d/spin-timestamp-timeout.j2
+    dest: /etc/sudoers.d/spin-timestamp-timeout
+    owner: root
+    group: root
+    mode: "0440"
+    validate: '/usr/sbin/visudo -cf %s'
+  when: sudo_timestamp_timeout is defined
+
+- name: Remove the sudo credential cache configuration when it is no longer set.
+  ansible.builtin.file:
+    path: /etc/sudoers.d/spin-timestamp-timeout
+    state: absent
+  when: sudo_timestamp_timeout is not defined
+
 - name: Open the firewall port for SSH.
   community.general.ufw:
     rule: allow

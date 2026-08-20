@@ -1,0 +1,10 @@
+# This file is managed by Ansible (serversideup.spin). Manual changes will be overwritten.
+# Custom NTP sources configured via the 'chrony_ntp_servers' variable.
+# These are used alongside Ubuntu's default geo-aware NTP pools.
+{% for item in chrony_ntp_servers %}
+{% if item.split() | first in ['server', 'pool', 'peer'] %}
+{{ item }}
+{% else %}
+server {{ item }} iburst
+{% endif %}
+{% endfor %}

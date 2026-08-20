@@ -55,11 +55,7 @@
 
 - name: Store newly created servers in fact
   ansible.builtin.set_fact:
-    newly_created_servers: >-
-          {{
-            groups['newly_created_servers'] | map('extract', hostvars) |
-            map(attribute='ansible_host') | list
-          }}
+    newly_created_servers: "{{ groups['newly_created_servers'] }}"
   delegate_facts: true
 
 - name: Refresh inventory

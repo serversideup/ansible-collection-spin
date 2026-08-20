@@ -3,18 +3,19 @@
 - name: Validate supported operating system version.
   ansible.builtin.assert:
     that:
-      - ansible_distribution == "Ubuntu"
-      - ansible_distribution_version in supported_ubuntu_versions
+      - ansible_facts['distribution'] == "Ubuntu"
+      - ansible_facts['distribution_version'] in supported_ubuntu_versions
     fail_msg: >-
-      Unsupported operating system: {{ ansible_distribution }} {{ ansible_distribution_version }}.
+      Unsupported operating system: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}.
       This collection only supports Ubuntu LTS versions: {{ supported_ubuntu_versions | join(', ') }}.
       Interim releases (xx.10, xx.04 non-LTS) have shorter support cycles and may cause issues.
-      Set 'skip_os_version_check: true' to bypass this check at your own risk.
-    success_msg: "Operating system validated: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      Set 'skip_os_version_validation: true' to bypass this check at your own risk.
+    success_msg: "Operating system validated: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
   vars:
     supported_ubuntu_versions:
       - "22.04"
       - "24.04"
+      - "26.04"
   when: not skip_os_version_validation | default(false)
 
 - name: Show error if no users are set.
@@ -36,6 +37,19 @@
   loop: "{{ users + additional_users | default([]) }}"
   loop_control:
     label: "{{ item.username }}"
+  run_once: true
+  delegate_to: localhost
+  connection: local
+
+- name: Validate the sudo credential cache timeout.
+  ansible.builtin.assert:
+    that:
+      - sudo_timestamp_timeout is integer
+      - sudo_timestamp_timeout | int >= 0
+    fail_msg: >-
+      'sudo_timestamp_timeout' must be an integer of 0 or greater (the number of minutes
+      sudo caches credentials). Use 0 to require a password for every sudo command.
+  when: sudo_timestamp_timeout is defined
   run_once: true
   delegate_to: localhost
   connection: local

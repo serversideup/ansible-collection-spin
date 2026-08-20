@@ -65,6 +65,92 @@
         fail_msg: "Failed to assert Docker Swarm was initialized."
 
     ###########################################
+    # Sudo Credential Cache Verification
+    ###########################################
+
+    - name: Check the sudo credential cache drop-in.
+      ansible.builtin.stat:
+        path: /etc/sudoers.d/spin-timestamp-timeout
+      register: sudo_timestamp_file
+
+    - name: Read the sudo credential cache drop-in.
+      ansible.builtin.slurp:
+        src: /etc/sudoers.d/spin-timestamp-timeout
+      register: sudo_timestamp_contents
+
+    - name: Assert the sudo credential cache timeout is configured.
+      ansible.builtin.assert:
+        that:
+          - sudo_timestamp_file.stat.exists
+          - sudo_timestamp_file.stat.pw_name == 'root'
+          - sudo_timestamp_file.stat.gr_name == 'root'
+          - sudo_timestamp_file.stat.mode == "0440"
+          - "('Defaults timestamp_timeout=' ~ sudo_timestamp_timeout) in (sudo_timestamp_contents.content | b64decode)"
+        fail_msg: "The sudo credential cache timeout was not written to /etc/sudoers.d/spin-timestamp-timeout."
+
+    - name: Validate the sudoers drop-in with visudo.
+      ansible.builtin.command: /usr/sbin/visudo -cf /etc/sudoers.d/spin-timestamp-timeout
+      changed_when: false
+
+    ###########################################
+    # Chrony / NTP Migration Verification
+    ###########################################
+
+    - name: Gather package facts.
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Assert chrony is installed and legacy NTP daemons are removed.
+      ansible.builtin.assert:
+        that:
+          - "'chrony' in ansible_facts.packages"
+          - "'ntp' not in ansible_facts.packages"
+          - "'ntpsec' not in ansible_facts.packages"
+        fail_msg: "Expected chrony to be installed and ntp/ntpsec to be removed."
+
+    - name: Check for running legacy NTP processes.
+      ansible.builtin.command: pgrep -x ntpd
+      register: legacy_ntp_process
+      changed_when: false
+      failed_when: false
+
+    - name: Assert no legacy NTP daemon is running.
+      ansible.builtin.assert:
+        that:
+          - legacy_ntp_process.rc != 0
+        fail_msg: "A legacy ntpd process is still running after migration to chrony."
+
+    - name: Read custom chrony sources file.
+      ansible.builtin.slurp:
+        src: /etc/chrony/sources.d/spin.sources
+      register: spin_sources_file
+      when: chrony_ntp_servers is defined
+
+    - name: Assert custom NTP servers are configured.
+      ansible.builtin.assert:
+        that:
+          - "'server time.cloudflare.com iburst' in spin_sources_file.content | b64decode"
+          - "'pool 0.pool.ntp.org iburst' in spin_sources_file.content | b64decode"
+        fail_msg: "Custom NTP servers are not rendered correctly in /etc/chrony/sources.d/spin.sources."
+      when: chrony_ntp_servers is defined
+
+    ###########################################
+    # Swap Container-Safety Verification
+    ###########################################
+
+    # Only pins the container gate - functional swap tests live in the swap-integration scenario.
+    - name: Check for a swap file.
+      ansible.builtin.stat:
+        path: /swapfile
+      register: swap_file_check
+
+    - name: Assert no swap file was created in the container.
+      ansible.builtin.assert:
+        that:
+          - not swap_file_check.stat.exists
+        fail_msg: "A swap file should never be created inside containers."
+
+    ###########################################
     # Postfix SASL Configuration Verification
     ###########################################
 
