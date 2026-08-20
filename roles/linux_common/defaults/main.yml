@@ -125,6 +125,8 @@ motd_services:
 ### Use the template below to set users and their authorized keys
 ## Passwords must be set with an encrypted hash. To do this, see the Ansible FAQ
 ## https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#how-do-i-generate-encrypted-passwords-for-the-user-module
+## By default, users with a password are forced to change it on first login.
+## Set "force_password_change: false" to keep the password you set.
 
 # users:
 #   - username: alice
@@ -132,6 +134,7 @@ motd_services:
 #     state: present
 #     groups: ['adm','sudo']
 #     password: "$6$mysecretsalt$qJbapG68nyRab3gxvKWPUcs2g3t0oMHSHMnSKecYNpSi3CuZm.GbBqXO8BE6EI6P1JUefhA0qvD7b5LSh./PU1"
+#     force_password_change: false
 #     shell: "/bin/bash"
 #     authorized_keys:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1lmyfakeublickeyMVIzwQXBzxxD9b8Erd1FKVvu alice"
