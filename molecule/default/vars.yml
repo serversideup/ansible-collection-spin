@@ -1,6 +1,7 @@
 server_timezone: "America/Chicago"
 server_contact: "otheremail@example.com"
 use_passwordless_sudo: false
+sudo_timestamp_timeout: 0
 
 # Chrony NTP Configuration (for testing)
 # Covers both accepted formats: plain hostname and full chrony directive.

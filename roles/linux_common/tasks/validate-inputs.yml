@@ -41,6 +41,19 @@
   delegate_to: localhost
   connection: local
 
+- name: Validate the sudo credential cache timeout.
+  ansible.builtin.assert:
+    that:
+      - sudo_timestamp_timeout is integer
+      - sudo_timestamp_timeout | int >= 0
+    fail_msg: >-
+      'sudo_timestamp_timeout' must be an integer of 0 or greater (the number of minutes
+      sudo caches credentials). Use 0 to require a password for every sudo command.
+  when: sudo_timestamp_timeout is defined
+  run_once: true
+  delegate_to: localhost
+  connection: local
+
 - name: Show error if no users belong to the sudo group.
   ansible.builtin.fail:
     msg: "No users are assigned to the sudo group. At least one user must belong to the sudo group."

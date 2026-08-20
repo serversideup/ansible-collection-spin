@@ -29,6 +29,13 @@ ssh_password_authentication: "no"
 ssh_allow_tcp_forwarding: "yes"
 ssh_gateway_ports: "yes"
 
+## Sudo
+## Minutes sudo caches your credentials after a successful password prompt.
+## Set to 0 to require a password for every sudo command (useful when AI agents
+## or other automation share your login session). Leave commented out to keep
+## sudo's own default and let Spin stay out of this setting entirely.
+# sudo_timestamp_timeout: 0
+
 
 ## External SMTP Relay (Optional)
 ## Uncomment and configure to relay mail through an external provider

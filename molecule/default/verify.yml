@@ -65,6 +65,34 @@
         fail_msg: "Failed to assert Docker Swarm was initialized."
 
     ###########################################
+    # Sudo Credential Cache Verification
+    ###########################################
+
+    - name: Check the sudo credential cache drop-in.
+      ansible.builtin.stat:
+        path: /etc/sudoers.d/spin-timestamp-timeout
+      register: sudo_timestamp_file
+
+    - name: Read the sudo credential cache drop-in.
+      ansible.builtin.slurp:
+        src: /etc/sudoers.d/spin-timestamp-timeout
+      register: sudo_timestamp_contents
+
+    - name: Assert the sudo credential cache timeout is configured.
+      ansible.builtin.assert:
+        that:
+          - sudo_timestamp_file.stat.exists
+          - sudo_timestamp_file.stat.pw_name == 'root'
+          - sudo_timestamp_file.stat.gr_name == 'root'
+          - sudo_timestamp_file.stat.mode == "0440"
+          - "('Defaults timestamp_timeout=' ~ sudo_timestamp_timeout) in (sudo_timestamp_contents.content | b64decode)"
+        fail_msg: "The sudo credential cache timeout was not written to /etc/sudoers.d/spin-timestamp-timeout."
+
+    - name: Validate the sudoers drop-in with visudo.
+      ansible.builtin.command: /usr/sbin/visudo -cf /etc/sudoers.d/spin-timestamp-timeout
+      changed_when: false
+
+    ###########################################
     # Chrony / NTP Migration Verification
     ###########################################
 
