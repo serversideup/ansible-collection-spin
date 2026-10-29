@@ -5,6 +5,7 @@
     state: absent
   with_items:
     - "/etc/motd"
+    - "/etc/update-motd.d/10-uname"
     - "/etc/update-motd.d/10-help-text"
     - "/etc/update-motd.d/50-motd-news"
     - "/etc/update-motd.d/51-cloudguest"

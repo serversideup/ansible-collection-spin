@@ -1,21 +1,29 @@
 ---
 
+# Debian reports point releases (e.g. 13.1), so it is matched on the major version only.
 - name: Validate supported operating system version.
   ansible.builtin.assert:
     that:
-      - ansible_facts['distribution'] == "Ubuntu"
-      - ansible_facts['distribution_version'] in supported_ubuntu_versions
+      - ansible_facts['distribution'] in supported_os_versions
+      - os_version in supported_os_versions[ansible_facts['distribution']]
     fail_msg: >-
       Unsupported operating system: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}.
-      This collection only supports Ubuntu LTS versions: {{ supported_ubuntu_versions | join(', ') }}.
+      This collection only supports Ubuntu LTS ({{ supported_os_versions['Ubuntu'] | join(', ') }})
+      and Debian stable ({{ supported_os_versions['Debian'] | join(', ') }}).
       Interim releases (xx.10, xx.04 non-LTS) have shorter support cycles and may cause issues.
       Set 'skip_os_version_validation: true' to bypass this check at your own risk.
     success_msg: "Operating system validated: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
   vars:
-    supported_ubuntu_versions:
-      - "22.04"
-      - "24.04"
-      - "26.04"
+    supported_os_versions:
+      Ubuntu:
+        - "22.04"
+        - "24.04"
+        - "26.04"
+      Debian:
+        - "13"
+    os_version: >-
+      {{ ansible_facts['distribution_major_version'] if ansible_facts['distribution'] == 'Debian'
+      else ansible_facts['distribution_version'] }}
   when: not skip_os_version_validation | default(false)
 
 - name: Show error if no users are set.

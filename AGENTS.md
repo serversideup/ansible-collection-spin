@@ -558,7 +558,7 @@ pip install -r requirements.txt
 
 The CI workflow runs:
 1. **Linting**: yamllint and ansible-lint
-2. **Molecule Tests**: Matrix testing across Ubuntu versions
+2. **Molecule Tests**: Matrix testing across Ubuntu and Debian versions
 3. **Release**: Publish to Ansible Galaxy on tag
 
 ### Cutting a Release
@@ -585,6 +585,7 @@ molecule test
 MOLECULE_DISTRO=ubuntu2204 molecule test
 MOLECULE_DISTRO=ubuntu2404 molecule test
 MOLECULE_DISTRO=ubuntu2604 molecule test
+MOLECULE_DISTRO=debian13 molecule test
 ```
 
 ## Related Projects
@@ -610,7 +611,7 @@ Don't assume when:
 - **Security first**: Always use `no_log` for sensitive data
 - **Validation**: Validate inputs before making changes
 - **Testing**: All changes should pass Molecule tests
-- **Compatibility**: Support Ubuntu 22.04, 24.04, and 26.04 (Debian-based)
+- **Compatibility**: Support Ubuntu 22.04, 24.04, 26.04, and Debian 13
 - **FQCN always**: Use fully qualified collection names for all modules
 - **Open source mindset**: Write code that others can understand and contribute to
 

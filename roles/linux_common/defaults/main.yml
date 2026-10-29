@@ -11,10 +11,10 @@ server_timezone: "Etc/UTC"
 server_contact: changeme@example.com
 
 ## NTP - Time Synchronization (chrony)
-## By default, chrony uses Ubuntu's stock NTP sources, which are geo-aware
+## By default, chrony uses the distro's stock NTP sources, which are geo-aware
 ## (pool.ntp.org resolves to servers near your machine). Uncomment and set
 ## your own list to add your own sources (written to /etc/chrony/sources.d/spin.sources
-## and used alongside Ubuntu's defaults - chrony automatically prefers the best sources).
+## and used alongside the distro's defaults - chrony automatically prefers the best sources).
 ## Plain hostnames are configured as 'server <host> iburst'. You can also pass
 ## full chrony directives (lines starting with 'server', 'pool', or 'peer').
 # chrony_ntp_servers:
@@ -84,9 +84,11 @@ common_installed_packages:
   - logrotate
   - mailutils
   - ncdu
+  - postfix
   - python3-minimal
   - python3-pip
   - ssh
+  - sudo
   - tzdata
   - ufw
   - unattended-upgrades
