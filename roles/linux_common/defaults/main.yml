@@ -30,6 +30,10 @@ ssh_allow_tcp_forwarding: "yes"
 ssh_gateway_ports: "yes"
 
 ## Sudo
+## Set to true to let sudo users run commands without a password.
+## When false, every sudo user must have a password set.
+use_passwordless_sudo: false
+
 ## Minutes sudo caches your credentials after a successful password prompt.
 ## Set to 0 to require a password for every sudo command (useful when AI agents
 ## or other automation share your login session). Leave commented out to keep
