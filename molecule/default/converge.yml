@@ -12,11 +12,6 @@
         cache_valid_time: 600
       when: ansible_os_family == 'Debian'
 
-    - name: Install PIP dependencies.
-      ansible.builtin.pip:
-        name: docker
-        state: present
-
     - name: Wait for systemd to complete initialization.  # noqa 303
       ansible.builtin.command: systemctl is-system-running
       register: systemctl_status

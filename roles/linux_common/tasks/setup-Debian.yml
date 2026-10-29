@@ -15,7 +15,7 @@
     state: latest
     update_cache: yes
 
-# The drop-in directory keeps the distro's chrony.conf untouched (it differs across Ubuntu versions).
+# The drop-in directory keeps the distro's chrony.conf untouched (it differs across distro versions).
 - name: Configure custom NTP servers for chrony.
   ansible.builtin.template:
     src: etc/chrony/sources.d/spin.sources.j2

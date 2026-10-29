@@ -1,3 +1,12 @@
+{% if ansible_facts['distribution'] == 'Debian' %}
+// Automatically upgrade packages from Debian's security archive only
+Unattended-Upgrade::Origins-Pattern {
+    // ${distro_codename} will be automatically expanded
+    "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+//  "origin=Debian,codename=${distro_codename},label=Debian";
+//  "origin=Debian,codename=${distro_codename}-updates";
+};
+{% else %}
 // Automatically upgrade packages from these (origin, archive) pairs
 Unattended-Upgrade::Allowed-Origins {    
     // ${distro_id} and ${distro_codename} will be automatically expanded
@@ -6,6 +15,7 @@ Unattended-Upgrade::Allowed-Origins {
 //    "${distro_id} ${distro_codename}-updates";
 //  "${distro_id} ${distro_codename}-proposed-updates";
 };
+{% endif %}
 
 // List of packages to not update
 Unattended-Upgrade::Package-Blacklist {
