@@ -39,7 +39,7 @@
   ansible.builtin.fail:
     msg: "User '{{ item.username }}' is missing a password. Passwords are required for sudo users when passwordless sudo is disabled."
   when:
-    - not use_passwordless_sudo | default(true)
+    - not use_passwordless_sudo | bool
     - "'sudo' in (item.groups | default([]))"
     - item.password is not defined or item.password | length == 0
   loop: "{{ users + additional_users | default([]) }}"

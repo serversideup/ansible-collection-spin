@@ -24,6 +24,11 @@ server_contact: changeme@example.com
 # SSH
 ssh_port: "22"
 
+## Sudo
+## Set to true to let sudo users run commands without a password.
+## When false, every sudo user must have a password set.
+use_passwordless_sudo: false
+
 ## Email Notifications
 postfix_hostname: "{{ inventory_hostname }}"
 
