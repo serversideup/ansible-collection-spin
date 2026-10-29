@@ -18,11 +18,36 @@
   register: reboot_required
   become: true
 
+# Provisioning runs this role with gather_facts disabled, so the server may not be reachable until now.
+- name: Gather distribution and kernel facts
+  ansible.builtin.setup:
+    gather_subset:
+      - min
+  when: "'distribution' not in ansible_facts"
+
+# Debian doesn't create /var/run/reboot-required after kernel updates, so compare the running kernel to the newest installed one.
+- name: Find installed kernels (when OS is Debian)
+  ansible.builtin.find:
+    paths: /boot
+    patterns: "vmlinuz-*"
+  register: installed_kernels
+  when: ansible_facts['distribution'] == 'Debian'
+
+- name: Check if a newer kernel is installed (when OS is Debian)
+  ansible.builtin.set_fact:
+    newer_kernel_installed: >-
+      {{ (installed_kernels.files | map(attribute='path') | map('basename')
+      | map('regex_replace', '^vmlinuz-', '') | community.general.version_sort | last)
+      != ansible_facts['kernel'] }}
+  when:
+    - ansible_facts['distribution'] == 'Debian'
+    - installed_kernels.files | length > 0
+
 - name: Reboot server if required
   ansible.builtin.reboot:
     reboot_timeout: 600
   become: true
-  when: reboot_required.stat.exists
+  when: reboot_required.stat.exists or newer_kernel_installed | default(false) | bool
   register: reboot_result
 
 - name: Wait for SSH connection after reboot (wait up to 5 minutes)
