@@ -135,6 +135,43 @@
       when: chrony_ntp_servers is defined
 
     ###########################################
+    # Unattended Upgrades Verification
+    ###########################################
+
+    - name: Read unattended-upgrades configuration.
+      ansible.builtin.slurp:
+        src: /etc/apt/apt.conf.d/50unattended-upgrades
+      register: unattended_upgrades_file
+
+    - name: Assert automatic reboots are off by default.
+      ansible.builtin.assert:
+        that:
+          - "'Unattended-Upgrade::Automatic-Reboot \"false\";' in unattended_upgrades_file.content | b64decode"
+          - "'Unattended-Upgrade::Automatic-Reboot-Time \"04:00\";' in unattended_upgrades_file.content | b64decode"
+        fail_msg: "Automatic reboot settings are not rendered correctly in /etc/apt/apt.conf.d/50unattended-upgrades."
+
+    - name: Gather distribution facts.
+      ansible.builtin.setup:
+        gather_subset:
+          - "!all"
+          - "!min"
+          - distribution
+
+    # Automatic-Reboot only fires when /var/run/reboot-required exists, which this hook creates on Debian.
+    - name: Check for the unattended-upgrades kernel hook.
+      ansible.builtin.stat:
+        path: /etc/kernel/postinst.d/unattended-upgrades
+      register: unattended_upgrades_kernel_hook
+      when: ansible_facts['distribution'] == 'Debian'
+
+    - name: Assert the unattended-upgrades kernel hook exists.
+      ansible.builtin.assert:
+        that:
+          - unattended_upgrades_kernel_hook.stat.exists
+        fail_msg: "/etc/kernel/postinst.d/unattended-upgrades is missing, so Debian will never flag a reboot after kernel updates."
+      when: ansible_facts['distribution'] == 'Debian'
+
+    ###########################################
     # Swap Container-Safety Verification
     ###########################################
 

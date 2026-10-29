@@ -80,6 +80,17 @@ apt_periodic_download_upgradeable_packages: "1"
 apt_periodic_autoclean_interval: "7"
 apt_periodic_unattended_upgrade: "1"
 
+# Unattended Upgrades - Email Notifications
+# Options: "always", "only-on-error", "on-change"
+unattended_upgrade_mail_report: "only-on-error"
+
+# Unattended Upgrades - Automatic Reboots
+# Reboot automatically when an update needs it (e.g. a kernel update).
+# Off by default so servers never reboot without you choosing it.
+unattended_upgrade_automatic_reboot: false
+# "now" or "HH:MM" in the server's local time
+unattended_upgrade_automatic_reboot_time: "04:00"
+
 ###########################################
 # Fun Terminal Customizations
 ###########################################

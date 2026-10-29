@@ -38,6 +38,9 @@ Unattended-Upgrade::MailReport "{{ unattended_upgrade_mail_report }}";
 // (equivalent to apt-get autoremove)
 //Unattended-Upgrade::Remove-Unused-Dependencies "false";
 
-// Automatically reboot *WITHOUT CONFIRMATION* if a 
-// the file /var/run/reboot-required is found after the upgrade 
-//Unattended-Upgrade::Automatic-Reboot "false";
+// Automatically reboot *WITHOUT CONFIRMATION* if
+// the file /var/run/reboot-required is found after the upgrade
+Unattended-Upgrade::Automatic-Reboot "{{ unattended_upgrade_automatic_reboot | bool | lower }}";
+
+// Reboot at this time instead of immediately ("now" or "HH:MM", server local time)
+Unattended-Upgrade::Automatic-Reboot-Time "{{ unattended_upgrade_automatic_reboot_time }}";
