@@ -1,4 +1,9 @@
 ---
+# Before installing so Docker's first start on a new server already uses it.
+- name: Configure the Docker daemon.
+  ansible.builtin.include_tasks: daemon-config.yml
+  tags: install-docker
+
 - name: Install Docker (when OS is Debian based)
   ansible.builtin.include_tasks: setup-Debian.yml
   when: ansible_facts['os_family'] == 'Debian'

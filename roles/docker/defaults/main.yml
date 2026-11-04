@@ -21,6 +21,19 @@ docker_apt_ignore_key_error: true
 docker_apt_gpg_key: "{{ docker_repo_url }}/{{ ansible_facts['distribution'] | lower }}/gpg"
 docker_apt_gpg_key_checksum: "sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570"
 
+# Merged into /etc/docker/daemon.json, leaving keys from other sources in place.
+# The "local" driver is Docker's recommended driver: it rotates logs (5 files of 20 MB,
+# compressed) so they can't fill the disk. https://docs.docker.com/engine/logging/drivers/local/
+docker_daemon_options:
+  log-driver: "local"
+
+# Set to an address like "127.0.0.1:9323" to expose Docker engine and Swarm metrics to Prometheus.
+docker_metrics_addr: ""
+
+# Docker must restart to apply daemon.json changes, which stops every container on the host.
+# Set to "started" to apply changes at the next restart you schedule instead.
+docker_restart_handler_state: restarted
+
 # Docker Swarm configuration.
 docker_swarm:
   # Use "default_ipv4.address" and fail to first available IP if not set.

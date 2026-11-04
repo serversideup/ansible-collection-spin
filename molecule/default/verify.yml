@@ -255,3 +255,43 @@
           - libsasl2_check.rc == 0
         fail_msg: "libsasl2-modules package is not installed"
       when: postfix_relayhost is defined
+
+    ###########################################
+    # Docker Daemon Configuration Verification
+    ###########################################
+
+    - name: Read the Docker daemon configuration.
+      ansible.builtin.slurp:
+        src: /etc/docker/daemon.json
+      register: docker_daemon_config_file
+
+    - name: Assert log rotation and metrics are configured.
+      ansible.builtin.assert:
+        that:
+          - docker_daemon_config['log-driver'] == 'local'
+          - docker_daemon_config['metrics-addr'] == docker_metrics_addr
+        fail_msg: "The Docker daemon configuration is missing log rotation or metrics settings"
+      vars:
+        docker_daemon_config: "{{ docker_daemon_config_file.content | b64decode | from_json }}"
+
+    - name: Get the running Docker daemon's settings.
+      community.docker.docker_host_info:
+      register: docker_host_settings
+
+    - name: Assert Docker is running with the local logging driver.
+      ansible.builtin.assert:
+        that:
+          - docker_host_settings.host_info.LoggingDriver == 'local'
+        fail_msg: "Docker is not using the local logging driver"
+
+    - name: Check the Docker metrics endpoint.
+      ansible.builtin.uri:
+        url: "http://{{ docker_metrics_addr }}/metrics"
+        return_content: false
+      register: docker_metrics_check
+
+    - name: Assert the Docker metrics endpoint responds.
+      ansible.builtin.assert:
+        that:
+          - docker_metrics_check.status == 200
+        fail_msg: "Docker is not serving metrics on {{ docker_metrics_addr }}"

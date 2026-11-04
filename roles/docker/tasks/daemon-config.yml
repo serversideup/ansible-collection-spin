@@ -1,0 +1,39 @@
+---
+- name: Check if the Docker daemon is already installed.
+  ansible.builtin.stat:
+    path: /usr/bin/dockerd
+  register: docker_daemon_binary
+
+- name: Ensure the Docker configuration directory exists.
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Read the existing Docker daemon configuration (if present).
+  ansible.builtin.slurp:
+    src: /etc/docker/daemon.json
+  register: docker_daemon_existing_config
+  failed_when: false
+
+# Merged so keys written by other roles survive.
+- name: Ensure the Docker daemon configuration is up to date.
+  ansible.builtin.copy:
+    content: >-
+      {{
+        ((docker_daemon_existing_config.content | b64decode | from_json)
+          if (docker_daemon_existing_config.content is defined
+              and (docker_daemon_existing_config.content | b64decode | trim | length) > 0)
+          else {})
+        | combine(docker_daemon_options, recursive=true)
+        | combine({'metrics-addr': docker_metrics_addr} if docker_metrics_addr | length > 0 else {})
+        | to_nice_json
+      }}
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+    validate: "{{ 'dockerd --validate --config-file=%s' if docker_daemon_binary.stat.exists else omit }}"
+  notify: Restart docker
