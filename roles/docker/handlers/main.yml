@@ -6,4 +6,4 @@
 - name: Restart docker
   ansible.builtin.service:
     name: docker
-    state: "restarted"
+    state: "{{ docker_restart_handler_state }}"

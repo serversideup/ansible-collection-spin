@@ -38,6 +38,28 @@ docker_user:
   #   - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFRfXxUZ8q9vHRcQZ6tLb0KwGHu8xjQHfYopZKLmnopQ anotherfake@key"
 ```
 
+## Docker daemon configuration
+The role merges `docker_daemon_options` into `/etc/docker/daemon.json`. Keys that other roles or people added to that file stay in place, and keys set in `docker_daemon_options` win when both set the same key.
+
+By default the role uses Docker's recommended [`local` logging driver](https://docs.docker.com/engine/logging/drivers/local/), which keeps 5 compressed files of 20 MB per container so logs can't fill the disk.
+
+```yml
+docker_daemon_options:
+  log-driver: "local"
+
+# Expose Docker engine and Swarm metrics to a local Prometheus scraper (off by default).
+docker_metrics_addr: "127.0.0.1:9323"
+
+# "restarted" applies daemon.json changes right away. "started" waits for the next restart you schedule.
+docker_restart_handler_state: restarted
+```
+
+Docker only reads `daemon.json` when it starts, so the role restarts Docker when the file changes. A restart stops every container on the host, and Swarm services and containers without a restart policy only come back once Swarm or you start them again. On servers that are already running, set `docker_restart_handler_state: "started"` and restart Docker yourself during a maintenance window. On a new server the file is written before Docker is installed, so Docker's first start already uses it.
+
+Logging changes only apply to containers created after the restart. Existing containers keep their old logging settings until they are re-created, for example by your next deployment.
+
+When Docker is already installed, the role checks the merged file with `dockerd --validate` before writing it, so a bad option can't stop Docker from starting.
+
 ### Dependencies
 See [`requirements.yml`](./requirements.yml) for all collection dependencies.
 
