@@ -29,3 +29,8 @@
 
 - name: Configure server users.
   ansible.builtin.include_tasks: users.yml
+
+# After users, so their ~/.ssh folders exist to be watched.
+- name: Configure audit logging.
+  ansible.builtin.include_tasks: auditd.yml
+  when: auditd_enabled | bool
