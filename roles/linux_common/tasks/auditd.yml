@@ -1,0 +1,55 @@
+---
+- name: Install auditd.
+  ansible.builtin.apt:
+    name: auditd
+    state: present
+
+# A watch on a folder that doesn't exist isn't loaded, so make sure every user has one.
+- name: Ensure each user's SSH folder exists to be watched.
+  ansible.builtin.file:
+    path: "{{ (item.homedir | default('/home/' ~ item.username)) }}/.ssh"
+    state: directory
+    owner: "{{ item.username }}"
+    mode: "0700"
+  loop: "{{ flattened_users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: item.state | default('present') == 'present'
+
+- name: Ensure root's SSH folder exists to be watched.
+  ansible.builtin.file:
+    path: /root/.ssh
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Ensure the audit rules are up to date.
+  ansible.builtin.template:
+    src: etc/audit/rules.d/50-spin.rules.j2
+    dest: /etc/audit/rules.d/50-spin.rules
+    owner: root
+    group: root
+    mode: "0640"
+  notify: Load audit rules
+
+- name: Configure audit log rotation.
+  ansible.builtin.lineinfile:
+    path: /etc/audit/auditd.conf
+    regexp: '^\s*{{ item.key }}\s*='
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - { key: max_log_file, value: "{{ auditd_max_log_file }}" }
+    - { key: num_logs, value: "{{ auditd_num_logs }}" }
+    - { key: max_log_file_action, value: ROTATE }
+  loop_control:
+    label: "{{ item.key }}"
+  notify: Reload auditd
+
+# The kernel's audit system isn't per container, so a container would change the host's rules.
+- name: Ensure auditd is started and enabled on boot.
+  ansible.builtin.service:
+    name: auditd
+    state: started
+    enabled: true
+  when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']

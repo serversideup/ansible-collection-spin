@@ -92,6 +92,18 @@ unattended_upgrade_automatic_reboot: false
 unattended_upgrade_automatic_reboot_time: "04:00"
 
 ###########################################
+# Audit Logging (auditd)
+###########################################
+## Records changes to accounts, sudo, SSH, cron, and systemd units, programs run from
+## temporary folders, and every command a logged-in user runs as root (including with sudo).
+## Off by default. Logs stay in /var/log/audit, so ship them off the server if you want
+## to keep them as evidence after a breach.
+auditd_enabled: false
+## Size of each log file in MB, and how many to keep before the oldest is deleted
+auditd_max_log_file: 50
+auditd_num_logs: 10
+
+###########################################
 # Fun Terminal Customizations
 ###########################################
 motd_header_text: "ServerSideUp"

@@ -1,0 +1,42 @@
+## {{ ansible_managed }}
+
+# Keep loading the remaining rules if one fails, such as a watch on a user created later
+-i
+
+# Accounts, groups, and passwords
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+
+# Who can use sudo
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+
+# SSH server settings and authorized keys
+-w /etc/ssh/sshd_config -p wa -k sshd_config
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd_config
+-w /root/.ssh/ -p wa -k ssh_keys
+{% for user in flattened_users if user.state | default('present') == 'present' %}
+-w {{ user.homedir | default('/home/' ~ user.username) }}/.ssh/ -p wa -k ssh_keys
+{% endfor %}
+{% if docker_user is defined and docker_user.username is defined %}
+-w /home/{{ docker_user.username }}/.ssh/ -p wa -k ssh_keys
+{% endif %}
+
+# Scheduled tasks and services, common places to hide persistence
+-w /etc/crontab -p wa -k cron
+-w /etc/cron.d/ -p wa -k cron
+-w /var/spool/cron/ -p wa -k cron
+-w /etc/systemd/system/ -p wa -k systemd
+
+# Programs run from temporary folders, where downloaded malware usually lands
+-w /tmp/ -p x -k exec_tmp
+-w /var/tmp/ -p x -k exec_tmp
+-w /dev/shm/ -p x -k exec_tmp
+
+# Every command run as root by someone who logged in, including with sudo
+-a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=unset -k root_command
+{% if ansible_facts['architecture'] == 'x86_64' %}
+-a always,exit -F arch=b32 -S execve -F euid=0 -F auid>=1000 -F auid!=unset -k root_command
+{% endif %}

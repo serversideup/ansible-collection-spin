@@ -30,3 +30,13 @@
 
 - name: Run newaliases
   ansible.builtin.command: newaliases
+
+# Skipped in containers, where loading rules would change the host kernel's audit rules
+- name: Load audit rules
+  ansible.builtin.command: augenrules --load
+  when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
+
+# auditd refuses a systemd restart, but rereads its config on this signal
+- name: Reload auditd
+  ansible.builtin.command: auditctl --signal reload
+  when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']

@@ -58,6 +58,8 @@ additional_users:
     authorized_keys:
       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu nopassword"
 
+auditd_enabled: true
+
 docker_metrics_addr: "127.0.0.1:9323"
 
 docker_user:

@@ -295,3 +295,51 @@
         that:
           - docker_metrics_check.status == 200
         fail_msg: "Docker is not serving metrics on {{ docker_metrics_addr }}"
+
+    ###########################################
+    # Audit Logging Verification
+    ###########################################
+
+    - name: Gather package facts for auditd.
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Read the audit rules.
+      ansible.builtin.slurp:
+        src: /etc/audit/rules.d/50-spin.rules
+      register: audit_rules_file
+
+    - name: Read the auditd configuration.
+      ansible.builtin.slurp:
+        src: /etc/audit/auditd.conf
+      register: auditd_conf_file
+
+    - name: Assert auditd is installed and configured.
+      ansible.builtin.assert:
+        that:
+          - "'auditd' in ansible_facts.packages"
+          - "'-k identity' in audit_rules"
+          - "'-k sudoers' in audit_rules"
+          - "'-w /home/alice/.ssh/ -p wa -k ssh_keys' in audit_rules"
+          - "'-w /home/dockeruser/.ssh/ -p wa -k ssh_keys' in audit_rules"
+          - "'-k exec_tmp' in audit_rules"
+          - "'-F euid=0 -F auid>=1000 -F auid!=unset -k root_command' in audit_rules"
+          - "auditd_conf is search('(?m)^max_log_file = 50$')"
+          - "auditd_conf is search('(?m)^num_logs = 10$')"
+          - "auditd_conf is search('(?m)^max_log_file_action = ROTATE$')"
+        fail_msg: "auditd is not installed or its rules and rotation are not configured"
+      vars:
+        audit_rules: "{{ audit_rules_file.content | b64decode }}"
+        auditd_conf: "{{ auditd_conf_file.content | b64decode }}"
+
+    - name: Check that alice's SSH folder exists to be watched.
+      ansible.builtin.stat:
+        path: /home/alice/.ssh
+      register: alice_ssh_dir
+
+    - name: Assert alice's SSH folder exists.
+      ansible.builtin.assert:
+        that:
+          - alice_ssh_dir.stat.isdir
+          - alice_ssh_dir.stat.mode == '0700'
+        fail_msg: "alice's SSH folder is missing or has the wrong permissions"
