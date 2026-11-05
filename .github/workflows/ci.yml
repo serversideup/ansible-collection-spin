@@ -12,7 +12,7 @@ jobs:
 
     lint:
         name: Lint
-        runs-on: &runner ${{ github.repository_owner == 'serversideup' && 'depot-ubuntu-24.04-4' || 'ubuntu-latest' }}
+        runs-on: &runner ${{ github.repository_owner == 'serversideup' && 'depot-ubuntu-24.04' || 'ubuntu-latest' }}
         steps:
             - name: Check out the codebase.
               uses: actions/checkout@v7
