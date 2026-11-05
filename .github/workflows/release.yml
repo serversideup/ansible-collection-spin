@@ -10,7 +10,7 @@ on:
 
 jobs:
   release:
-      runs-on: ubuntu-22.04
+      runs-on: ${{ github.repository_owner == 'serversideup' && 'depot-ubuntu-22.04' || 'ubuntu-22.04' }}
       steps:
         - name: Check out the codebase.
           uses: actions/checkout@v7

@@ -12,7 +12,7 @@ jobs:
 
     lint:
         name: Lint
-        runs-on: ubuntu-latest
+        runs-on: &runner ${{ github.repository_owner == 'serversideup' && 'depot-ubuntu-24.04-4' || 'ubuntu-latest' }}
         steps:
             - name: Check out the codebase.
               uses: actions/checkout@v7
@@ -33,7 +33,7 @@ jobs:
 
     molecule:
         name: Molecule
-        runs-on: ubuntu-latest
+        runs-on: *runner
         strategy:
             matrix:
                 distro:
@@ -63,7 +63,7 @@ jobs:
 
     swap-integration:
         name: Swap Integration (VM)
-        runs-on: ubuntu-latest
+        runs-on: *runner
         steps:
             - name: Check out the codebase.
               uses: actions/checkout@v7
@@ -85,7 +85,7 @@ jobs:
     version:
         name: Version
         if: ${{ github.ref_type == 'tag' }}
-        runs-on: ubuntu-latest
+        runs-on: *runner
         outputs:
             version: ${{ steps.parse.outputs.version }}
         steps:
