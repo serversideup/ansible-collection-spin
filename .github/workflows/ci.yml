@@ -33,7 +33,7 @@ jobs:
 
     molecule:
         name: Molecule
-        runs-on: *runner
+        runs-on: ubuntu-latest
         strategy:
             matrix:
                 distro:
@@ -53,9 +53,6 @@ jobs:
 
             - name: Install test dependencies.
               run: pip3 install -r requirements.txt
-
-            - name: Load the IPv6 firewall kernel modules ufw needs.
-              run: sudo modprobe -a ip6t_rt ip6t_hl
 
             - name: Run Molecule tests.
               run: molecule test
