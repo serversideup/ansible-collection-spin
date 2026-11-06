@@ -164,6 +164,7 @@ motd_header_text: "Spin"
 motd_header_text_color: '\e[38;5;255m'
 motd_header_background_color: '\e[48;5;34m'
 motd_hostname_text_color: '\e[38;5;202m'
+## When crowdsec_enabled is true, fail2ban is shown as crowdsec.
 motd_services:
   - ufw
   - fail2ban

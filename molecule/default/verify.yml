@@ -366,6 +366,18 @@
           - crowdsec_services.results[2].stdout != 'active'
         fail_msg: "CrowdSec or its bouncer isn't running, or fail2ban is still running"
 
+    - name: Read the MOTD services script.
+      ansible.builtin.slurp:
+        src: /etc/update-motd.d/40-services
+      register: motd_services_script
+
+    - name: Assert the MOTD shows CrowdSec instead of fail2ban.
+      ansible.builtin.assert:
+        that:
+          - "'crowdsec' in (motd_services_script.content | b64decode)"
+          - "'fail2ban' not in (motd_services_script.content | b64decode)"
+        fail_msg: "The MOTD services list still shows fail2ban instead of CrowdSec"
+
     - name: List CrowdSec bouncers.
       ansible.builtin.command: cscli bouncers list -o json
       register: crowdsec_bouncers

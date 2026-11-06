@@ -8,7 +8,11 @@ red="\e[1;31m"
 undim="\e[0m"
 
 # Load services from local file
+{% if crowdsec_enabled %}
+services=({{ motd_services | map('regex_replace', '^fail2ban$', 'crowdsec') | join(' ') }})
+{% else %}
 services=({{ motd_services | join(' ') }})
+{% endif %}
 
 # sort services
 IFS=$'\n' services=($(sort <<<"${services[*]}"))
