@@ -1,8 +1,9 @@
 # {{ ansible_managed }}
-# Matches Traefik in Compose (traefik) and Swarm (mystack_traefik.1.abc123). It needs
-# `accessLog: {}` in Traefik's config, which writes each request to the container's logs.
+# Needs `accessLog: {}` in Traefik's config, which writes each request to the container's logs.
 source: docker
 container_name_regexp:
-  - ".*traefik.*"
+{% for pattern in crowdsec_traefik_containers %}
+  - "{{ pattern }}"
+{% endfor %}
 labels:
   type: traefik

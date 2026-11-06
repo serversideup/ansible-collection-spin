@@ -117,6 +117,10 @@ crowdsec_share_signals: false
 crowdsec_http_simulation: true
 ## IPs or CIDR ranges that are never blocked. Private networks are always allowed.
 crowdsec_allowlist: []
+## Docker containers whose logs are Traefik access logs, as regular expressions. The default
+## matches Compose (traefik) and Swarm (mystack_traefik.1.abc123) names.
+crowdsec_traefik_containers:
+  - ".*traefik.*"
 
 ###########################################
 # Fun Terminal Customizations
