@@ -13,6 +13,13 @@
   ansible.builtin.include_role:
     name: serversideup.spin.docker_user
 
+# CrowdSec lives in linux_common. These parts need Docker to exist first.
+- name: Configure CrowdSec for Docker.
+  ansible.builtin.include_role:
+    name: serversideup.spin.linux_common
+    tasks_from: crowdsec-docker.yml
+  when: crowdsec_enabled | default(false) | bool
+
 - name: Initialize Docker Swarm.
   community.docker.docker_swarm:
     state: present

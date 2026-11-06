@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+mode: iptables
+iptables_chains:
+  - INPUT
+{% if crowdsec_protect_docker | bool %}
+  # Traffic to published container ports skips INPUT, so it's blocked here
+  - DOCKER-USER
+{% endif %}

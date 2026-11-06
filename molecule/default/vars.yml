@@ -60,6 +60,11 @@ additional_users:
 
 auditd_enabled: true
 
+crowdsec_enabled: true
+crowdsec_allowlist:
+  - 203.0.113.10
+  - 198.51.100.0/24
+
 docker_metrics_addr: "127.0.0.1:9323"
 
 docker_user:

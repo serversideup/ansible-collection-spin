@@ -40,3 +40,13 @@
 - name: Reload auditd
   ansible.builtin.command: auditctl --signal reload
   when: ansible_facts['virtualization_type'] | default('') not in ['docker', 'container', 'containerd', 'podman', 'lxc']
+
+- name: Restart crowdsec
+  ansible.builtin.service:
+    name: crowdsec
+    state: restarted
+
+- name: Restart crowdsec-firewall-bouncer
+  ansible.builtin.service:
+    name: crowdsec-firewall-bouncer
+    state: restarted

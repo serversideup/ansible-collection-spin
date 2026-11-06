@@ -1,0 +1,29 @@
+---
+# Run by the docker role, after Docker is installed.
+- name: List the installed CrowdSec collections.
+  ansible.builtin.command: cscli collections list -o json
+  register: crowdsec_collections
+  changed_when: false
+  check_mode: false
+
+- name: Install CrowdSec's Traefik and web exploit detections.
+  ansible.builtin.command: "cscli collections install {{ item }}"
+  loop:
+    - crowdsecurity/traefik
+    - crowdsecurity/http-cve
+  when: item not in ((crowdsec_collections.stdout | from_json).collections | default([], true) | map(attribute='name') | list)
+  notify: Restart crowdsec
+
+- name: Read Traefik's access logs from its container.
+  ansible.builtin.template:
+    src: etc/crowdsec/acquis.d/spin-traefik.yaml.j2
+    dest: /etc/crowdsec/acquis.d/spin-traefik.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart crowdsec
+
+- name: Protect Docker containers with the CrowdSec firewall bouncer.
+  ansible.builtin.include_tasks: crowdsec-firewall.yml
+  vars:
+    crowdsec_protect_docker: true

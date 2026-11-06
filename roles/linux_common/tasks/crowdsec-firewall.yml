@@ -1,0 +1,10 @@
+---
+# Shared with the docker role, which runs this again once Docker exists.
+- name: Ensure the CrowdSec firewall bouncer blocks the right traffic.
+  ansible.builtin.template:
+    src: etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml.local.j2
+    dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml.local
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Restart crowdsec-firewall-bouncer
