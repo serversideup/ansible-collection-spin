@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+# With simulation on, the listed detections still block. Every other one only logs.
+simulation: {{ crowdsec_http_simulation | bool | string | lower }}
+{% set exclusions = crowdsec_ssh_scenarios if crowdsec_http_simulation | bool else [] %}
+{% if exclusions | length > 0 %}
+exclusions:
+{% for scenario in exclusions %}
+  - {{ scenario }}
+{% endfor %}
+{% else %}
+exclusions: []
+{% endif %}

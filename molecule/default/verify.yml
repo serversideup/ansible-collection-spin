@@ -343,3 +343,73 @@
           - alice_ssh_dir.stat.isdir
           - alice_ssh_dir.stat.mode == '0700'
         fail_msg: "alice's SSH folder is missing or has the wrong permissions"
+
+    ###########################################
+    # CrowdSec Verification
+    ###########################################
+
+    - name: Check the CrowdSec, bouncer, and fail2ban services.
+      ansible.builtin.command: "systemctl is-active {{ item }}"
+      loop:
+        - crowdsec
+        - crowdsec-firewall-bouncer
+        - fail2ban
+      register: crowdsec_services
+      changed_when: false
+      failed_when: false
+
+    - name: Assert CrowdSec replaced fail2ban.
+      ansible.builtin.assert:
+        that:
+          - crowdsec_services.results[0].stdout == 'active'
+          - crowdsec_services.results[1].stdout == 'active'
+          - crowdsec_services.results[2].stdout != 'active'
+        fail_msg: "CrowdSec or its bouncer isn't running, or fail2ban is still running"
+
+    - name: List CrowdSec bouncers.
+      ansible.builtin.command: cscli bouncers list -o json
+      register: crowdsec_bouncers
+      changed_when: false
+
+    - name: Check whether CrowdSec registered with its central API.
+      ansible.builtin.stat:
+        path: /etc/crowdsec/online_api_credentials.yaml
+      register: crowdsec_capi_file
+
+    - name: List CrowdSec collections.
+      ansible.builtin.command: cscli collections list -o json
+      register: crowdsec_collections_check
+      changed_when: false
+
+    - name: Read the CrowdSec simulation settings.
+      ansible.builtin.slurp:
+        src: /etc/crowdsec/simulation.yaml
+      register: crowdsec_simulation_file
+
+    - name: Read the firewall rules.
+      ansible.builtin.command: iptables -S
+      register: crowdsec_iptables
+      changed_when: false
+
+    - name: List CrowdSec log sources.
+      ansible.builtin.find:
+        paths: /etc/crowdsec/acquis.d
+        patterns: "*sshd*.yaml"
+      register: crowdsec_ssh_sources
+
+    - name: Assert CrowdSec is configured privacy-first with Docker protection.
+      ansible.builtin.assert:
+        that:
+          - (crowdsec_bouncers.stdout | from_json) | length > 0
+          - crowdsec_capi_file.stat.size == 0
+          - "'crowdsecurity/traefik' in crowdsec_collection_names"
+          - "'crowdsecurity/http-cve' in crowdsec_collection_names"
+          - "'simulation: true' in crowdsec_simulation"
+          - "'crowdsecurity/ssh-bf' in crowdsec_simulation"
+          - crowdsec_iptables.stdout is search('-A INPUT .*CROWDSEC')
+          - crowdsec_iptables.stdout is search('-A DOCKER-USER .*CROWDSEC')
+          - crowdsec_ssh_sources.matched == 1
+        fail_msg: "CrowdSec isn't registered with its bouncer, is sharing, or is missing Docker protection"
+      vars:
+        crowdsec_collection_names: "{{ (crowdsec_collections_check.stdout | from_json).collections | map(attribute='name') | list }}"
+        crowdsec_simulation: "{{ crowdsec_simulation_file.content | b64decode }}"

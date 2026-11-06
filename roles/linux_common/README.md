@@ -104,6 +104,21 @@ auditd_max_log_file: 50
 auditd_num_logs: 10
 
 ###########################################
+# CrowdSec (replaces fail2ban)
+###########################################
+## Detects attacks in your logs and blocks the attacking IPs at the firewall, including
+## traffic to Docker containers. When on, fail2ban is turned off. Off by default.
+crowdsec_enabled: false
+## Share attack signals (attacker IP, which detection fired, and when) with CrowdSec to
+## get their community blocklist in return. Off by default for privacy, such as GDPR.
+crowdsec_share_signals: false
+## HTTP detections (scans, brute force, and exploit attempts against web apps) only log
+## what they would block until you set this to false. SSH detections always block.
+crowdsec_http_simulation: true
+## IPs or CIDR ranges that are never blocked. Private networks are always allowed.
+crowdsec_allowlist: []
+
+###########################################
 # Fun Terminal Customizations
 ###########################################
 motd_header_text: "ServerSideUp"

@@ -1,0 +1,171 @@
+---
+# The package asks this before it installs. Answering false means it never registers with
+# CrowdSec's central API, and the install doesn't fail when that API is unreachable.
+- name: Set whether CrowdSec registers with its central API.
+  ansible.builtin.debconf:
+    name: crowdsec
+    question: crowdsec/capi
+    value: "{{ crowdsec_share_signals | bool | string | lower }}"
+    vtype: boolean
+
+- name: Ensure the Python library for managing APT repositories is installed.
+  ansible.builtin.apt:
+    name: python3-debian
+    state: present
+
+- name: Ensure the APT keyrings directory exists.
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download the CrowdSec signing key.
+  ansible.builtin.get_url:
+    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+    dest: /etc/apt/keyrings/crowdsec.asc
+    mode: "0644"
+
+- name: Add the CrowdSec APT repository.
+  ansible.builtin.deb822_repository:
+    name: crowdsec
+    uris: https://packagecloud.io/crowdsec/crowdsec/any
+    suites: any
+    components: main
+    signed_by: /etc/apt/keyrings/crowdsec.asc
+    state: present
+
+# Ubuntu Pro's ESM repository carries an old CrowdSec that would otherwise win.
+- name: Prefer CrowdSec's own packages.
+  ansible.builtin.copy:
+    dest: /etc/apt/preferences.d/crowdsec
+    content: |
+      Package: crowdsec crowdsec-firewall-bouncer-iptables
+      Pin: release o=packagecloud.io/crowdsec/crowdsec
+      Pin-Priority: 1001
+    owner: root
+    group: root
+    mode: "0644"
+
+# Separate from the bouncer, so CrowdSec is configured before the bouncer registers with it.
+- name: Install CrowdSec.
+  ansible.builtin.apt:
+    name: crowdsec
+    state: present
+    update_cache: true
+
+- name: Install the CrowdSec firewall bouncer.
+  ansible.builtin.apt:
+    name: crowdsec-firewall-bouncer-iptables
+    state: present
+
+- name: Check whether CrowdSec is registered with its central API.
+  ansible.builtin.stat:
+    path: /etc/crowdsec/online_api_credentials.yaml
+  register: crowdsec_capi_credentials
+
+- name: Register with CrowdSec's central API.
+  ansible.builtin.command: cscli capi register
+  when:
+    - crowdsec_share_signals | bool
+    - crowdsec_capi_credentials.stat.size | default(0) == 0
+  notify: Restart crowdsec
+
+- name: Stop sharing with CrowdSec's central API.
+  ansible.builtin.copy:
+    dest: /etc/crowdsec/online_api_credentials.yaml
+    content: ""
+    owner: root
+    group: root
+    mode: "0600"
+  when:
+    - not crowdsec_share_signals | bool
+    - crowdsec_capi_credentials.stat.size | default(0) > 0
+  notify: Restart crowdsec
+
+# CrowdSec's own setup reads /var/log/auth.log where rsyslog writes one (Ubuntu). Reading
+# the journal too would count each login twice and ban twice as fast.
+- name: Check if CrowdSec already reads SSH logins from a file.
+  ansible.builtin.stat:
+    path: /etc/crowdsec/acquis.d/setup.sshd.yaml
+  register: crowdsec_setup_sshd
+
+- name: Read SSH logins from the journal when nothing else does.
+  ansible.builtin.template:
+    src: etc/crowdsec/acquis.d/spin-sshd.yaml.j2
+    dest: /etc/crowdsec/acquis.d/spin-sshd.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  when: not crowdsec_setup_sshd.stat.exists
+  notify: Restart crowdsec
+
+- name: Remove the journal source when CrowdSec already reads SSH logins.
+  ansible.builtin.file:
+    path: /etc/crowdsec/acquis.d/spin-sshd.yaml
+    state: absent
+  when: crowdsec_setup_sshd.stat.exists
+  notify: Restart crowdsec
+
+- name: Ensure the allowlist is up to date.
+  ansible.builtin.template:
+    src: etc/crowdsec/parsers/s02-enrich/spin-allowlist.yaml.j2
+    dest: /etc/crowdsec/parsers/s02-enrich/spin-allowlist.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  when: crowdsec_allowlist | length > 0
+  notify: Restart crowdsec
+
+- name: Remove the allowlist when it's empty.
+  ansible.builtin.file:
+    path: /etc/crowdsec/parsers/s02-enrich/spin-allowlist.yaml
+    state: absent
+  when: crowdsec_allowlist | length == 0
+  notify: Restart crowdsec
+
+- name: List the installed CrowdSec detections.
+  ansible.builtin.command: cscli scenarios list -o json
+  register: crowdsec_scenarios
+  changed_when: false
+  check_mode: false
+
+# Simulation applies to every detection except SSH's, so SSH attacks are always blocked.
+- name: Ensure simulation mode is up to date.
+  ansible.builtin.template:
+    src: etc/crowdsec/simulation.yaml.j2
+    dest: /etc/crowdsec/simulation.yaml
+    owner: root
+    group: root
+    mode: "0644"
+  vars:
+    crowdsec_ssh_scenarios: >-
+      {{ (crowdsec_scenarios.stdout | from_json).scenarios | default([], true)
+         | map(attribute='name') | select('search', '/ssh-') | list }}
+  notify: Restart crowdsec
+
+- name: Check if Docker is installed.
+  ansible.builtin.stat:
+    path: /usr/bin/dockerd
+  register: crowdsec_dockerd
+
+- name: Configure the CrowdSec firewall bouncer.
+  ansible.builtin.include_tasks: crowdsec-firewall.yml
+  vars:
+    crowdsec_protect_docker: "{{ crowdsec_dockerd.stat.exists }}"
+
+- name: Ensure fail2ban is stopped, since CrowdSec replaces it.
+  ansible.builtin.service:
+    name: fail2ban
+    state: stopped
+    enabled: false
+
+- name: Ensure CrowdSec and its firewall bouncer are started and enabled on boot.
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - crowdsec
+    - crowdsec-firewall-bouncer

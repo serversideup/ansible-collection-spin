@@ -34,3 +34,7 @@
 - name: Configure audit logging.
   ansible.builtin.include_tasks: auditd.yml
   when: auditd_enabled | bool
+
+- name: Configure CrowdSec.
+  ansible.builtin.include_tasks: crowdsec.yml
+  when: crowdsec_enabled | bool
