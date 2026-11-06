@@ -1,2 +1,3 @@
 ---
 # vars file for linux_common
+crowdsec_allowlist_name: spin

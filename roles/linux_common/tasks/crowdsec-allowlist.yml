@@ -1,0 +1,48 @@
+---
+# Unlike a parser whitelist, a CrowdSec allowlist also keeps these addresses off the community
+# blocklist, and adding an address lifts any ban it already has.
+- name: List CrowdSec's allowlists.
+  ansible.builtin.command: cscli allowlists list -o json
+  register: crowdsec_allowlists
+  changed_when: false
+  check_mode: false
+
+- name: Set the addresses in Spin's allowlist.
+  ansible.builtin.set_fact:
+    crowdsec_allowlist_exists: "{{ crowdsec_spin_allowlist | length > 0 }}"
+    crowdsec_allowlist_current: >-
+      {{ crowdsec_spin_allowlist | map(attribute='items') | flatten | map(attribute='value') | list }}
+  vars:
+    crowdsec_spin_allowlist: >-
+      {{ crowdsec_allowlists.stdout | from_json | default([], true)
+         | selectattr('name', '==', crowdsec_allowlist_name) | list }}
+
+- name: Create Spin's allowlist.
+  ansible.builtin.command:
+    argv: [cscli, allowlists, create, "{{ crowdsec_allowlist_name }}", -d, Addresses Spin never blocks]
+  when:
+    - crowdsec_allowlist | length > 0
+    - not crowdsec_allowlist_exists
+
+- name: Add new addresses to the allowlist.
+  ansible.builtin.command:
+    argv: "{{ ['cscli', 'allowlists', 'add', crowdsec_allowlist_name] + crowdsec_allowlist_added }}"
+  vars:
+    crowdsec_allowlist_added: "{{ crowdsec_allowlist | difference(crowdsec_allowlist_current) }}"
+  when: crowdsec_allowlist_added | length > 0
+
+- name: Remove addresses that are no longer in the allowlist.
+  ansible.builtin.command:
+    argv: "{{ ['cscli', 'allowlists', 'remove', crowdsec_allowlist_name] + crowdsec_allowlist_removed }}"
+  vars:
+    crowdsec_allowlist_removed: "{{ crowdsec_allowlist_current | difference(crowdsec_allowlist) }}"
+  when:
+    - crowdsec_allowlist | length > 0
+    - crowdsec_allowlist_removed | length > 0
+
+- name: Delete the allowlist when it's empty.
+  ansible.builtin.command:
+    argv: [cscli, allowlists, delete, "{{ crowdsec_allowlist_name }}"]
+  when:
+    - crowdsec_allowlist | length == 0
+    - crowdsec_allowlist_exists

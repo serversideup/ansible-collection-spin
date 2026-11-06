@@ -409,6 +409,25 @@
         patterns: "*sshd*.yaml"
       register: crowdsec_ssh_sources
 
+    - name: Read Spin's CrowdSec allowlist.
+      ansible.builtin.command: cscli allowlists inspect spin -o json
+      register: crowdsec_allowlist_check
+      changed_when: false
+
+    - name: Check for the old parser allowlist.
+      ansible.builtin.stat:
+        path: /etc/crowdsec/parsers/s02-enrich/spin-allowlist.yaml
+      register: crowdsec_parser_allowlist
+
+    - name: Assert the allowlist matches crowdsec_allowlist.
+      ansible.builtin.assert:
+        that:
+          - crowdsec_allowlist_values | sort == ['198.51.100.0/24', '203.0.113.10']
+          - not crowdsec_parser_allowlist.stat.exists
+        fail_msg: "Spin's CrowdSec allowlist doesn't match crowdsec_allowlist, or the old parser allowlist remains"
+      vars:
+        crowdsec_allowlist_values: "{{ (crowdsec_allowlist_check.stdout | from_json)['items'] | map(attribute='value') | list }}"
+
     - name: Assert CrowdSec is configured privacy-first with Docker protection.
       ansible.builtin.assert:
         that:

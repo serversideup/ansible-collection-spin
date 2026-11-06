@@ -115,7 +115,8 @@ crowdsec_share_signals: false
 ## HTTP detections (scans, brute force, and exploit attempts against web apps) only log
 ## what they would block until you set this to false. SSH detections always block.
 crowdsec_http_simulation: true
-## IPs or CIDR ranges that are never blocked. Private networks are always allowed.
+## IPs or CIDR ranges that are never blocked, even by the community blocklist. Adding one
+## also lifts any ban it already has. Private networks are always allowed.
 crowdsec_allowlist: []
 ## Docker containers whose logs are Traefik access logs, as regular expressions. The default
 ## matches Compose (traefik) and Swarm (mystack_traefik.1.abc123) names.
