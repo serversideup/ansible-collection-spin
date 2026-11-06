@@ -186,6 +186,51 @@ motd_services:
 #       - public_key: "ssh-ed25519 AAAAC3NzaC1anotherfakekeyIMVIzwQXBzxxD9b8Erd1FKVvu bob"
 ```
 
+CrowdSec
+--------
+CrowdSec watches your server's logs for attacks and blocks the attacking IPs at the firewall, including traffic headed to your Docker containers. It replaces fail2ban and is off by default. All of its variables are listed under Role Variables above.
+
+### Allowlist your own IPs before you turn it on
+SSH detections block from the first run. A few failed logins from your laptop can ban you from your own server. Add the IPs you connect from to `crowdsec_allowlist` in the same change that turns CrowdSec on:
+
+```yaml
+# .spin.yml
+crowdsec_enabled: true
+crowdsec_allowlist:
+  - 203.0.113.10      # Office
+  - 198.51.100.0/24   # VPN
+```
+
+Then run `spin provision`. The same run stops and disables fail2ban. You only need to list public IPs, since private network ranges are always allowed.
+
+### Traefik logs need access logging turned on
+Once Docker is installed, CrowdSec also reads the logs of any container whose name matches `crowdsec_traefik_containers`. Traefik only writes a line per request when its config includes `accessLog: {}`. Without it, CrowdSec has nothing to read and won't detect web attacks.
+
+### HTTP detections only log until you turn on blocking
+Web detections, like scans, brute force, and exploit attempts, run in simulation mode while `crowdsec_http_simulation` is `true`. They record what they would block without blocking it. A false positive here bans a real visitor, and sometimes everyone behind the same office IP. Check what they flag for a while first:
+
+```bash
+sudo cscli alerts list
+```
+
+When the alerts look right, set `crowdsec_http_simulation: false` and run `spin provision` again.
+
+### Sharing signals gets you the community blocklist
+With `crowdsec_share_signals: true`, your server sends CrowdSec the IPs it blocks, which detection fired, and when. In return, it downloads CrowdSec's community blocklist of IPs that other servers reported. It's off by default for privacy reasons, such as GDPR.
+
+The allowlist covers the community blocklist too. An allowlisted IP stays reachable even if another server reports it.
+
+### If CrowdSec locks you out
+Adding an IP to `crowdsec_allowlist` lifts any ban it already has. If you can still reach the server from somewhere else, such as CI or another network, add your IP to the allowlist and run `spin provision` from there.
+
+If you can't reach the server at all, open your provider's web console, log in, and delete the ban:
+
+```bash
+sudo cscli decisions delete --ip 203.0.113.10
+```
+
+Then add the IP to `crowdsec_allowlist` so it can't happen again.
+
 Dependencies
 ------------
 See [`requirements.yml`](./requirements.yml) for all collection dependencies.
