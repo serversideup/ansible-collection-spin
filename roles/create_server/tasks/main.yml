@@ -1,5 +1,16 @@
 ---
 
+- name: Validate server names are unique
+  ansible.builtin.assert:
+    that:
+      - (servers | map(attribute='server_name') | list | unique | length) == (servers | length)
+    fail_msg: >-
+      Duplicate server names detected. Each server must have a unique 'server_name'.
+      Server names: {{ servers | map(attribute='server_name') | list | sort | join(', ') }}
+    quiet: true
+  run_once: true
+  delegate_to: localhost
+
 - name: Validate servers configuration
   ansible.builtin.assert:
     that:
